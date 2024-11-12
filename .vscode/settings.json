@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "cstring": "cpp",
+        "variant": "cpp",
+        "__string": "cpp",
+        "charconv": "cpp",
+        "memory": "cpp",
+        "utility": "cpp"
+    }
+}
