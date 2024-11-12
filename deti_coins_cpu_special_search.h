@@ -36,7 +36,7 @@ static void deti_coins_cpu_special_search(void)
   coin[10] = 0x08200820; // 41DA
   coin[11] = 0x08200820; // 41DA
 
-  coin[12] = 0x0A207820; // 41DA
+  coin[12] = 0x0A200820; // 41DA
 
   //
   // find DETI coins
