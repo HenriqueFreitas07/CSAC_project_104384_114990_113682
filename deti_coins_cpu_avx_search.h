@@ -43,8 +43,7 @@ static void deti_coins_cpu_avx_search(u32_t n_random_words)
         coins[10 * N_LANES + lane] = 0x08200820; // 41DA
         coins[11 * N_LANES + lane] = 0x08200820; // 41DA
         coins[12 * N_LANES + lane] = 0x0A200820; // 41DA
-      
-        
+#if 0
         coins[ 6 * N_LANES + lane] = 0x30203041 + (lane); // \bX\bX
         coins[ 7 * N_LANES + lane] = 0x30203020; // 
         coins[ 8 * N_LANES + lane] = 0x30203020; // 41DA
@@ -52,17 +51,22 @@ static void deti_coins_cpu_avx_search(u32_t n_random_words)
         coins[10 * N_LANES + lane] = 0x30203020; // 41DA
         coins[11 * N_LANES + lane] = 0x30203020; // 41DA
         coins[12 * N_LANES + lane] = 0x0A203020; // 41DA
+#endif
     }
   for(n_attempts = n_coins = 0ul;stop_request == 0;n_attempts+=N_LANES)
   {
 
-    if(n_attempts % 100000 == 0)
-    {
+#if 0
+    if(n_attempts % (95 * 95 * 95 * 95) == 0)
+    {static int bomb = 20;
         for (u32_t lane= 0u; lane < N_LANES; lane++){
             for(u32_t idx = 0;idx < 13;idx++) coin[idx] = coins[idx * N_LANES + lane];
-            printf("%52.52s",(char *)coin);
+            printf("%d %52.52s",lane,(char *)coin);
         }
+        if(bomb-- <= 0)
+          exit(1);
     }
+    #endif
     //
     // compute MD5 hash
     //
@@ -84,12 +88,13 @@ static void deti_coins_cpu_avx_search(u32_t n_random_words)
     //
     // try next combination (byte range: 0x20..0x7E)
     //
+#if 0
     for (u32_t lane = 0; lane < N_LANES; lane++) {
       
           if((coins[6*N_LANES + lane] & 0x00FF0000 ) != 0x007E0000){ coins[6*N_LANES + lane] += 0x00010000; break; }
           coins[6*N_LANES + lane] += 0xFFA20000;
 
-          for(u32_t idx = 7*N_LANES +lane ;idx < 12 * N_LANES + lane ;idx++)
+          for(u32_t idx = 7*N_LANES + lane ;idx < 12 * N_LANES + lane ;idx++)
           {
             if((coins[idx] & 0x000000FF) != 0x0000007E) { coins[idx] += 0x00000001; break; }
             if((coins[idx] & 0x00FF0000) != 0x007E0000) { coins[idx] += 0x0000FFA2; break; }
@@ -97,7 +102,34 @@ static void deti_coins_cpu_avx_search(u32_t n_random_words)
             coins[idx] += 0xFFA1FFA2;
           }
     }
-
+#else
+    u32_t idx = 6u;    
+    if((coins[idx*N_LANES + 0] & 0x00FF0000 ) != 0x007E0000)
+       coins[idx*N_LANES + 0] += 0x00010000;
+    else
+    {
+      coins[idx*N_LANES + 0] += 0xFFA20000; // UV7EWXYZ + FFA20000 = UV20WXYZ
+      for(idx = 7;idx < 12;idx++)
+        {
+          if((coins[idx*N_LANES + 0] & 0x000000FF) != 0x0000007E)
+          {
+            coins[idx*N_LANES + 0] += 0x00000001;
+            break;
+          }
+          if((coins[idx*N_LANES + 0] & 0x00FF0000) != 0x007E0000)
+          {
+            coins[idx*N_LANES + 0] += 0x0000FFA2;
+            break;
+          }
+          coins[idx*N_LANES + 0] += 0xFFA1FFA2;
+        }
+    }
+    for(;idx > 6;idx--)
+      for (u32_t lane = 1; lane < N_LANES; lane++)
+        coins[idx*N_LANES + lane] = coins[idx*N_LANES + 0];
+    for (u32_t lane = 1; lane < N_LANES; lane++)
+      coins[idx*N_LANES + lane] = coins[idx*N_LANES + 0] + lane;
+#endif
   }
   STORE_DETI_COINS();
   printf("deti_coins_cpu_avx_search: %lu DETI coin%s found in %lu attempt%s (expected %.2f coins)\n",n_coins,(n_coins == 1ul) ? "" : "s",n_attempts,(n_attempts == 1ul) ? "" : "s",(double)n_attempts / (double)(1ul << 32));
