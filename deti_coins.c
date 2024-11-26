@@ -13,7 +13,7 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <sys/resource.h>
-
+#include <omp.h>
 
 #if defined(__GNUC__) && __BYTE__ORDER__ != __LITTLE_ENDIAN__
 # error "this code requires a little-endian processor"
@@ -129,6 +129,7 @@ static void alarm_signal_handler(int dummy)
 
 #include "deti_coins_cpu_search.h"
 #include "deti_coins_cpu_special_search.h"
+#include "deti_coins_cpu_openmp_search.h"
 
 //#include "search_utilities.h"
 //#ifdef MD5_CPU_AVX
@@ -197,6 +198,11 @@ int main(int argc,char **argv)
         fflush(stdout);
         deti_coins_cpu_search();
         break;
+      case 'A':
+        printf("searching for %u seconds using deti_coins_cpu_openmp_search()\n",seconds);
+        fflush(stdout);
+        deti_coins_cpu_openmp_search();
+        break;  
 #ifdef DETI_COINS_CPU_AVX_SEARCH
       case '1':
         printf("searching for %u seconds using deti_coins_cpu_avx_search()\n",seconds);
