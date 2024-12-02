@@ -5,6 +5,7 @@
         "__string": "cpp",
         "charconv": "cpp",
         "memory": "cpp",
-        "utility": "cpp"
+        "utility": "cpp",
+        "random": "c"
     }
 }
