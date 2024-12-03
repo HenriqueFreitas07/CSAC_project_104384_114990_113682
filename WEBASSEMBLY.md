@@ -12,3 +12,6 @@ Forma 2: mais rapida
 python3 -m http.server 8000
 
 escolher o ficheiro web_assembly.html
+
+
+
