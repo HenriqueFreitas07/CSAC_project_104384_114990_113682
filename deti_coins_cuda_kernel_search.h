@@ -11,9 +11,13 @@
 
 static void deti_coins_cuda_kernel_search(void)
 {
+
   initialize_cuda(0,"md5_cuda_kernel.cubin","cuda_md5_kernel", 0, 1024);
   cu_params[0] = &device_data;
   cu_params[1] = &device_hash;
+
+  // cuda_md5_kernel(u32_t *interleaved32_data,u32_t *interleaved32_hash)
+  
 
 
   u32_t n,idx,coin[13u],hash[4u];
