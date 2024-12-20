@@ -6,6 +6,7 @@
 // DETI coins main program (possible solution)
 //
 
+#include <omp.h>
 #include <time.h>
 #include <stdio.h>
 #include <signal.h>
@@ -13,6 +14,18 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <sys/resource.h>
+
+//
+// number of threads
+//
+
+#ifndef n_threads
+# define n_threads   4
+#endif
+#if n_threads < 2 || n_threads > 16
+# error "too few or too many threads"
+#endif
+#define n_threads_max  16
 
 
 #if defined(__GNUC__) && __BYTE__ORDER__ != __LITTLE_ENDIAN__
@@ -129,6 +142,7 @@ static void alarm_signal_handler(int dummy)
 
 #include "deti_coins_cpu_search.h"
 #include "deti_coins_cpu_special_search.h"
+#include "deti_coins_cpu_OpenMP_search.h"
 
 #include "search_utilities.h"
 #ifdef MD5_CPU_AVX
@@ -203,6 +217,24 @@ int main(int argc,char **argv)
         printf("searching for %u seconds using deti_coins_cpu_avx_search()\n",seconds);
         fflush(stdout);
         deti_coins_cpu_avx_search(n_random_words);
+        # pragma omp parallel num_threads(n_threads)
+          { // automatic variable are local to the thread
+            int thread_number = omp_get_thread_num(); 
+            deti_coins_cpu_OpenMP_search(thread_number);
+          }
+        break;
+#endif
+#ifdef DETI_COINS_CPU_OpenMP_SEARCH
+      case '8':
+        printf("searching for %u seconds using deti_coins_cpu_OpenMP_search()\n",seconds);
+        fflush(stdout);
+        
+        # pragma omp parallel num_threads(n_threads)
+          { // automatic variable are local to the thread
+            int thread_number = omp_get_thread_num(); 
+            deti_coins_cpu_OpenMP_search(thread_number);
+          }
+        STORE_DETI_COINS();  
         break;
 #endif
 #ifdef DETI_COINS_CPU_AVX2_SEARCH
@@ -239,6 +271,9 @@ int main(int argc,char **argv)
   fprintf(stderr,"usage: %s -t                               # MD5 hash tests\n",argv[0]);
   fprintf(stderr,"       %s -s0 [seconds] [ignored]          # search for DETI coins using md5_cpu()\n",argv[0]);
 #ifdef DETI_COINS_CPU_AVX_SEARCH
+  fprintf(stderr,"       %s -s1 [seconds] [n_random_words]   # search for DETI coins using md5_cpu_avx()\n",argv[0]);
+#endif
+#ifdef DETI_COINS_CPU_OpenMP_SEARCH
   fprintf(stderr,"       %s -s1 [seconds] [n_random_words]   # search for DETI coins using md5_cpu_avx()\n",argv[0]);
 #endif
 #ifdef DETI_COINS_CPU_AVX2_SEARCH
