@@ -26,11 +26,13 @@ static void deti_coins_cuda_kernel_search(void)
     cu_params[0] = &v1;
     //v2
     cu_params[1] = &v2;
-    // hash array
-    device_data[0]=1
-    cu_params[2]= &device_data;
-    CU_CALL( cuLaunchKernel , (cu_kernel,(1<<20)/block_size,1,1,block_size,1,1,0,(CUstream)0,&cu_params[0],NULL) 
+    //
+    cu_params[2] = 64u;
+    // number of coins to 
+    cu_params[3]= &device_data;
 
+    device_data[0]=1
+    CU_CALL( cuLaunchKernel , (cu_kernel,(1<<20)/block_size,1,1,block_size,1,1,0,(CUstream)0,&cu_params[0],NULL) 
     if(n >= 32u)
     {
       save_deti_coin(coin);

@@ -48,14 +48,12 @@ extern "C" __global__ __launch_bounds__(128,1) void cuda_md5_kernel(u32_t v1,u32
   }
 
   for( int i =0;i<number_coins; i++){
-for (int offset = 8; offset <= 11; ++offset) {
-    int index = offset + 13u * i;
-
-    next_value_to_try(coin[index]);
-
-    if ((coin[index] & 0xFF) == 0x7F) {
+    for (int offset = 8; offset <= 11; ++offset) {
+        int index = offset + 13u * i;
         next_value_to_try(coin[index]);
-    }
+        if ((coin[index] & 0xFF) == 0x7F) {
+            next_value_to_try(coin[index]);
+        }
 }
 # define C(c)         (c)
 # define ROTATE(x,n)  (((x) << (n)) | ((x) >> (32 - (n))))
@@ -70,7 +68,6 @@ for (int offset = 8; offset <= 11; ++offset) {
 # undef HASH
 # undef STATE
 # undef X
-
     u32_t idx = atomicAdd(&data_storage_device,13)
     if (hash[3]==0 && idx < 1024 -13){
       data_storage_device[idx]=coin
