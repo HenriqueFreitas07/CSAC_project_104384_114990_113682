@@ -217,11 +217,6 @@ int main(int argc,char **argv)
         printf("searching for %u seconds using deti_coins_cpu_avx_search()\n",seconds);
         fflush(stdout);
         deti_coins_cpu_avx_search(n_random_words);
-        # pragma omp parallel num_threads(n_threads)
-          { // automatic variable are local to the thread
-            int thread_number = omp_get_thread_num(); 
-            deti_coins_cpu_OpenMP_search(thread_number);
-          }
         break;
 #endif
 #ifdef DETI_COINS_CPU_OpenMP_SEARCH
