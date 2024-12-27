@@ -1,3 +1,5 @@
+How to run OpenMP (case '7')
+
 make deti_coins_intel
 
 rm deti_coins_vault.txt
