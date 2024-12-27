@@ -229,11 +229,28 @@ int main(int argc,char **argv)
         printf("searching for %u seconds using deti_coins_cpu_OpenMP_search()\n",seconds);
         fflush(stdout);
         
-        # pragma omp parallel num_threads(n_threads)
+        unsigned long total_coins = 0;
+        unsigned long total_attempts = 0;
+
+        // Parallel region with reduction to sum the totals across threads
+        # pragma omp parallel num_threads(n_threads) reduction(+:total_coins, total_attempts)
           { // automatic variable are local to the thread
             int thread_number = omp_get_thread_num(); 
-            deti_coins_cpu_OpenMP_search(thread_number);
+            unsigned long n_coins = 0;
+            unsigned long n_attempts = 0;
+
+            deti_coins_cpu_OpenMP_search(thread_number, &n_coins, &n_attempts);
+            
+            total_coins += n_coins;
+            total_attempts += n_attempts;
           }
+        
+        // Final aggregated results
+        double total_expected_coins = (double)total_attempts / (1ul << 32);
+        printf("Total: %lu DETI coin%s found in %lu attempt%s (expected %.2f coins)\n",
+              total_coins, (total_coins == 1ul) ? "" : "s", total_attempts,
+              (total_attempts == 1ul) ? "" : "s", total_expected_coins);
+
         STORE_DETI_COINS();  
         break;
 #endif

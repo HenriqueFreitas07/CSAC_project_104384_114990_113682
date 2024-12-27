@@ -10,11 +10,11 @@
 #define DETI_COINS_CPU_OpenMP_SEARCH
 
 
-static void deti_coins_cpu_OpenMP_search(int thread_number)
+static void deti_coins_cpu_OpenMP_search(int thread_number, unsigned long *out_n_coins, unsigned long *out_n_attempts)
 {
 # define N_LANES 4u
   u32_t coins[13u*N_LANES],hash[4u * N_LANES],coin[13];
-  u64_t n_attempts,n_coins;
+  u64_t n_attempts = 0, n_coins = 0;
   
   // ! The insert is made in reverse order because it's little endian
   // We want to start writing the integer in the most significant byte
@@ -125,6 +125,11 @@ static void deti_coins_cpu_OpenMP_search(int thread_number)
 #endif
   }
   printf("deti_coins_cpu_avx_search - THREAD %d : %lu DETI coin%s found in %lu attempt%s (expected %.2f coins)\n", thread_number, n_coins,(n_coins == 1ul) ? "" : "s",n_attempts,(n_attempts == 1ul) ? "" : "s",(double)n_attempts / (double)(1ul << 32));
+
+  // Set output values
+  *out_n_coins = n_coins;
+  *out_n_attempts = n_attempts;
+  
 # undef N_LANES
 }
 #endif
