@@ -11,17 +11,22 @@
 
 static void deti_coins_cuda_kernel_search(void)
 {
+  
+  initialize_cuda(0,"md5_cuda_kernel.cubin", "cuda_md5_kernel", 0, 1024);
+  cu_params[0] = &device_data;
+  cu_params[1] = &device_hash;
+
+  // cuda_md5_kernel(u32_t *interleaved32_data,u32_t *interleaved32_hash)
+  
   u32_t n,idx,coin[13u],hash[4u];
   u64_t n_attempts,n_coins;
   u08_t *bytes;
 
   bytes = (u08_t *)&coin[0];
+  
   //
   // mandatory for a DETI coin
   //
-  // More efficient way to do the above
-  // "DETI coin" in hexadecimal
-  // 0x44 0x45 0x54 0x49 0x20 0x63 0x6f 0x69 0x6e 0x20
   coin[ 0] = 0x49544544; // ITED
   coin[ 1] = 0x696f6320; // ioc_ 
   coin[ 2] = 0x7343206e; // sC_n
@@ -37,6 +42,7 @@ static void deti_coins_cuda_kernel_search(void)
   coin[11] = 0x08200820; // 41DA
 
   coin[12] = 0x0A200820; // 41DA
+
   //
   // arbitrary, but printable utf-8 data terminated with a '\n' is hightly desirable
   //
