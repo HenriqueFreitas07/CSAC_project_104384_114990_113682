@@ -281,6 +281,9 @@ int main(int argc,char **argv)
             local_coins += n_coins;
             local_attempts += n_attempts;
         }
+
+        // Each process stores its own coins locally
+        STORE_DETI_COINS(); // Store the coins found by this process
         
         // Global variables for total aggregation
         unsigned long global_coins = 0;
@@ -297,7 +300,7 @@ int main(int argc,char **argv)
                   global_coins, (global_coins == 1ul) ? "" : "s", global_attempts,
                   (global_attempts == 1ul) ? "" : "s", total_expected_coins);
 
-            STORE_DETI_COINS(); // Store global results
+            // STORE_DETI_COINS(); // Store global results
         }
 
         MPI_Finalize();

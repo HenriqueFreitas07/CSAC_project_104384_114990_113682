@@ -1,8 +1,11 @@
 MPI version:
-    make deti_coins_mpi
+    make deti_coins_intel
+    rm deti_coins_vault.txt
+    mpirun -np 4 ./deti_coins_intel -s8 2m
 
-    mpirun -np 4 ./deti_coins_mpi -s8 2m
+    sort deti_coins_vault.txt | wc
+    sort deti_coins_vault.txt | uniq -c
 
 To run the previous ones:
-    make deti_coins_mpi
-    ./deti_coins_mpi -s7 8m
+    make deti_coins_intel
+    ./deti_coins_intel -s7 8m

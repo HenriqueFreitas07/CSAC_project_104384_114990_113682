@@ -37,13 +37,18 @@ static void deti_coins_cpu_MPI_OpenMP_search(int process_rank, int thread_number
         coins[ 4 * N_LANES + lane] = 0x41203432; // A_42
         coins[ 5 * N_LANES + lane] = 0x34314441; // 41DA
         // coins[ 6 * N_LANES + lane] = 0x08200841 + (lane); // \bX\bX 
-        coins[ 6 * N_LANES + lane] = 0x08410841 + lane + (thread_number<<16) + (process_rank << 24);// \bX\bX 
+        unsigned int combined = process_rank * 7 + thread_number; // Multiplication with a prime number ensures that swapped values of process_rank and thread_number result in different outcomes.
+
+        coins[ 6 * N_LANES + lane] = 0x08410841 + lane + (combined<<16); // (thread_number<<16); // + (process_rank << 24);// \bX\bX 
         coins[ 7 * N_LANES + lane] = 0x08200820; // 
         coins[ 8 * N_LANES + lane] = 0x08200820; // 41DA
         coins[ 9 * N_LANES + lane] = 0x08200820; // 41DA
         coins[10 * N_LANES + lane] = 0x08200820; // 41DA
         coins[11 * N_LANES + lane] = 0x08200820; // 41DA
         coins[12 * N_LANES + lane] = 0x0A200820; // 41DA
+
+        // Null-terminate the string for the current lane
+        // ((char *)coins)[(13 * N_LANES + lane) * sizeof(u32_t) - 1] = '\0';
 #if 0
         coins[ 6 * N_LANES + lane] = 0x30203041 + (lane); // \bX\bX
         coins[ 7 * N_LANES + lane] = 0x30203020; // 
