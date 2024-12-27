@@ -6,11 +6,11 @@
 // deti_coins_cpu_special_search() --- find DETI coins using md5_cpu()
 //
 
-#ifndef DETI_COINS_CPU_OpenMP_SEARCH
-#define DETI_COINS_CPU_OpenMP_SEARCH
+#ifndef DETI_COINS_CPU_MPI_OpenMP_SEARCH
+#define DETI_COINS_CPU_MPI_OpenMP_SEARCH
 
 
-static void deti_coins_cpu_OpenMP_search(int thread_number, unsigned long *out_n_coins, unsigned long *out_n_attempts) // TODO: delete the first argument
+static void deti_coins_cpu_MPI_OpenMP_search(int process_rank, int thread_number, unsigned long *out_n_coins, unsigned long *out_n_attempts) 
 {
 # define N_LANES 4u
   u32_t coins[13u*N_LANES],hash[4u * N_LANES],coin[13];
@@ -37,7 +37,7 @@ static void deti_coins_cpu_OpenMP_search(int thread_number, unsigned long *out_n
         coins[ 4 * N_LANES + lane] = 0x41203432; // A_42
         coins[ 5 * N_LANES + lane] = 0x34314441; // 41DA
         // coins[ 6 * N_LANES + lane] = 0x08200841 + (lane); // \bX\bX 
-        coins[ 6 * N_LANES + lane] = 0x08410841 + lane + (thread_number<<16); // \bX\bX 
+        coins[ 6 * N_LANES + lane] = 0x08410841 + lane + (thread_number<<16) + (process_rank << 24);// \bX\bX 
         coins[ 7 * N_LANES + lane] = 0x08200820; // 
         coins[ 8 * N_LANES + lane] = 0x08200820; // 41DA
         coins[ 9 * N_LANES + lane] = 0x08200820; // 41DA

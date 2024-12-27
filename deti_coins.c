@@ -14,6 +14,7 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <sys/resource.h>
+#include <mpi.h>
 
 //
 // number of threads
@@ -143,6 +144,7 @@ static void alarm_signal_handler(int dummy)
 #include "deti_coins_cpu_search.h"
 #include "deti_coins_cpu_special_search.h"
 #include "deti_coins_cpu_OpenMP_search.h"
+#include "deti_coins_cpu_MPI_OpenMP_search.h"
 
 #include "search_utilities.h"
 #ifdef MD5_CPU_AVX
@@ -247,6 +249,58 @@ int main(int argc,char **argv)
               (total_attempts == 1ul) ? "" : "s", total_expected_coins);
 
         STORE_DETI_COINS();  
+        break;
+#endif
+#ifdef DETI_COINS_CPU_MPI_OpenMP_SEARCH
+      case '8':
+        int n_processes,rank;
+
+        //
+        // initialize the MPI environment, and get the number of processes and the MPI number of our process (the rank)
+        //
+        MPI_Init(&argc,&argv);
+        MPI_Comm_size(MPI_COMM_WORLD,&n_processes);
+        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+        
+        printf("Process %d/%d: searching for DETI coins\n", rank, n_processes);
+        fflush(stdout);
+
+        // Local variables for this MPI process
+        unsigned long local_coins = 0;
+        unsigned long local_attempts = 0;
+
+        // Parallel region with reduction to sum the totals across threads
+        #pragma omp parallel num_threads(n_threads) reduction(+:local_coins, local_attempts)
+        {
+            int thread_number = omp_get_thread_num();
+            unsigned long n_coins = 0;
+            unsigned long n_attempts = 0;
+
+            deti_coins_cpu_MPI_OpenMP_search(rank, thread_number, &n_coins, &n_attempts); // TODO: create deti_coins_cpu_MPI_OpenMP_search
+
+            local_coins += n_coins;
+            local_attempts += n_attempts;
+        }
+        
+        // Global variables for total aggregation
+        unsigned long global_coins = 0;
+        unsigned long global_attempts = 0;
+
+        // Use MPI_Reduce to aggregate results from all processes to rank 0
+        MPI_Reduce(&local_coins, &global_coins, 1, MPI_UNSIGNED_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(&local_attempts, &global_attempts, 1, MPI_UNSIGNED_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
+
+        // Rank 0 prints the global aggregated results
+        if (rank == 0) {
+            double total_expected_coins = (double)global_attempts / (1ul << 32);
+            printf("Total: %lu DETI coin%s found in %lu attempt%s (expected %.2f coins)\n",
+                  global_coins, (global_coins == 1ul) ? "" : "s", global_attempts,
+                  (global_attempts == 1ul) ? "" : "s", total_expected_coins);
+
+            STORE_DETI_COINS(); // Store global results
+        }
+
+        MPI_Finalize();
         break;
 #endif
 #ifdef DETI_COINS_CPU_AVX2_SEARCH
