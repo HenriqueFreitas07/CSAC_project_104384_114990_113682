@@ -2,7 +2,7 @@ make deti_coins_intel
 
 rm deti_coins_vault.txt
 
-./deti_coins_intel -s8 8m
+./deti_coins_intel -s7 8m
 
 
 
@@ -39,7 +39,7 @@ Correto, está tudo com um 1 atrás, o que signfica que são moedas únicas.
 
 Neste momento está a retornar isto:
 
-joao@hjoao:~/Documents/universidade/universidade/3ano/CSAC/project/CSAC_project_104384_114990_113682$ ./deti_coins_intel -s8 8m
+joao@hjoao:~/Documents/universidade/universidade/3ano/CSAC/project/CSAC_project_104384_114990_113682$ ./deti_coins_intel -s7 8m
 searching for 480 seconds using deti_coins_cpu_OpenMP_search()
 THREAD: 0 ; LANE: 0 ; FOUND ONE: DETI coin CsAC2024 AAD14 
 THREAD: 0 ; LANE: 0 ; FOUND ONE: DETI coin CsAC2024 AAD14 
