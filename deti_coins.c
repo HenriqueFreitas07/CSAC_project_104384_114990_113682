@@ -274,7 +274,7 @@ int main(int argc,char **argv)
   fprintf(stderr,"       %s -s1 [seconds] [n_random_words]   # search for DETI coins using md5_cpu_avx()\n",argv[0]);
 #endif
 #ifdef DETI_COINS_CPU_OpenMP_SEARCH
-  fprintf(stderr,"       %s -s1 [seconds] [n_random_words]   # search for DETI coins using md5_cpu_avx()\n",argv[0]);
+  fprintf(stderr,"       %s -s8 [seconds] [n_random_words]   # search for DETI coins using md5_cpu_avx()\n",argv[0]);
 #endif
 #ifdef DETI_COINS_CPU_AVX2_SEARCH
   fprintf(stderr,"       %s -s2 [seconds] [n_random_words]   # search for DETI coins using md5_cpu_avx2()\n",argv[0]);
