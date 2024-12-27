@@ -23,6 +23,7 @@
 # define USE_CUDA 0
 #endif
 
+//#define DETI_COINS_OPENCL_SEARCH
 
 //
 // unsigned integer data types and some useful functions (in cpu_utilities.h)
@@ -106,6 +107,15 @@ static void all_md5_tests(void)
 #ifdef MD5_CUDA
   test_md5_cuda();
 #endif
+  //
+  // opencl: md5_opencl() tests --- comparison with the hash data computed by test_cpu_md5()
+  //
+#ifdef DETI_COINS_OPENCL_SEARCH
+    initialize_opencl("md5_opencl_kernel.cl", "md5_opencl_kernel");
+    deti_coins_opencl_search();
+    terminate_opencl();
+    break;
+#endif
 }
 
 
@@ -143,6 +153,11 @@ static void alarm_signal_handler(int dummy)
 //#endif
 //#if USE_CUDA > 0
 //# include "deti_coins_cuda_search.h"
+//#endif
+
+// ! New adittion
+//#ifdef DETI_COINS_OPENCL_SEARCH
+//# include "deti_coins_opencl_search.h"
 //#endif
 
 
@@ -233,6 +248,13 @@ int main(int argc,char **argv)
         deti_coins_cpu_special_search();
         break;
 #endif
+#ifdef DETI_COINS_OPENCL_SEARCH
+      case 'o':
+        printf("searching for %u seconds using deti_coins_opencl_search()\n",seconds);
+        fflush(stdout);
+        deti_coins_opencl_search();
+        break;
+#endif
     }
     return 0;
   }
@@ -252,6 +274,9 @@ int main(int argc,char **argv)
 #endif
 #ifdef DETI_COINS_CPU_SPECIAL_SEARCH
   fprintf(stderr,"       %s -s9 [seconds] [ignored]          # special search for DETI coins using md5_cpu()\n",argv[0]);
+#endif
+#ifdef DETI_COINS_OPENCL_SEARCH
+  fprintf(stderr,"       %s -so [seconds] [ignored]          # search for DETI coins using OpenCL\n",argv[0]);
 #endif
   fprintf(stderr,"                                           #   seconds is the amount of time spent in the search\n");
   fprintf(stderr,"                                           #   n_random_words is the number of 4-byte words to use\n");
