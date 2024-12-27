@@ -24,6 +24,14 @@ __kernel void md5_opencl_kernel(__global uint *interleaved32_data,
 }
 
 
+// // md5_opencl_kernel.cl
+// __kernel void md5_kernel(__global unsigned char *data, __global unsigned char *output) {
+//     // Implement MD5 hash logic here using OpenCL
+//     // For example, each work item processes a chunk of the input data
+//     // and writes the result to the output buffer.
+// }
+
+
 // Kernel Design Overview
 // Input Buffers: __global uint *interleaved32_data
 // Output Buffers: __global uint *interleaved32_hash

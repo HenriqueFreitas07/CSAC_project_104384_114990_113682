@@ -1,3 +1,4 @@
+// main.c
 //
 // Tomás Oliveira e Silva,  October 2024
 //
@@ -38,28 +39,6 @@ typedef unsigned long u64_t;
 
 //
 // MD5 hash implementations and respective tests
-//
-// Intel Core i7-5500U CPU @ 2.40GHz, turbo boosted to 3.00GHz
-//   time per md5 hash ( cpu): 122.627ns 122.626ns
-//   time per md5 hash ( avx):  45.529ns  45.529ns
-//   time per md5 hash (avx2):  22.695ns  22.695ns
-//
-// Intel(R) Core(TM) i5-8400T CPU @ 1.70GHz, turbo boosted to 3.30GHz
-//   time per md5 hash ( cpu): 102.579ns 102.579ns
-//   time per md5 hash ( avx):  37.310ns  37.310ns
-//   time per md5 hash (avx2):  18.675ns  18.675ns
-//
-// AMD Ryzen 7 4800HS with Radeon Graphics (2.90GHz)
-//   time per md5 hash ( cpu):  75.165ns  75.165ns
-//   time per md5 hash ( avx):  31.903ns  31.902ns
-//   time per md5 hash (avx2):  15.962ns  15.962ns
-//
-// Mac Mini M2 high-performance "Avalanche" core (3.49GHz)
-//   time per md5 hash ( cpu):  84.959ns  85.057ns
-//   time per md5 hash (neon):  40.114ns  40.144ns
-// Mac Mini M2 energy-efficient "Blizzard" core (2.42GHz)
-//   time per md5 hash ( cpu): 144.973ns 145.190ns
-//   time per md5 hash (neon):  76.488ns  76.585ns
 //
 
 #include "md5.h"
@@ -111,7 +90,7 @@ static void all_md5_tests(void)
   // opencl: md5_opencl() tests --- comparison with the hash data computed by test_cpu_md5()
   //
 #ifdef DETI_COINS_OPENCL_SEARCH
-    initialize_opencl("md5_opencl_kernel.cl", "md5_opencl_kernel");
+    initialize_opencl("md5_opencl_kernel.cl", "md5_kernel");
     deti_coins_opencl_search();
     terminate_opencl();
     break;
@@ -156,9 +135,9 @@ static void alarm_signal_handler(int dummy)
 //#endif
 
 // ! New adittion
-//#ifdef DETI_COINS_OPENCL_SEARCH
-//# include "deti_coins_opencl_search.h"
-//#endif
+#ifdef DETI_COINS_OPENCL_SEARCH
+# include "deti_coins_opencl_search.h"
+#endif
 
 
 //
@@ -276,9 +255,7 @@ int main(int argc,char **argv)
   fprintf(stderr,"       %s -s9 [seconds] [ignored]          # special search for DETI coins using md5_cpu()\n",argv[0]);
 #endif
 #ifdef DETI_COINS_OPENCL_SEARCH
-  fprintf(stderr,"       %s -so [seconds] [ignored]          # search for DETI coins using OpenCL\n",argv[0]);
+  fprintf(stderr,"       %s -so [seconds] [n_random_words]   # search for DETI coins using OpenCL\n",argv[0]);
 #endif
-  fprintf(stderr,"                                           #   seconds is the amount of time spent in the search\n");
-  fprintf(stderr,"                                           #   n_random_words is the number of 4-byte words to use\n");
   return 1;
 }
