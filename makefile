@@ -48,9 +48,6 @@ clean:
 deti_coins_intel:	$(SRC) $(H_FILES)
 	mpicc -Wall -O2 -fopenmp -mavx2 -DUSE_CUDA=0 $(SRC) -o deti_coins_intel
 
-# deti_coins_mpi: $(SRC) $(H_FILES)
-# 	mpicc -Wall -O2 -fopenmp -mavx2 -DUSE_CUDA=0 $(SRC) -o deti_coins_mpi
-
 #
 # compilation for Apple silicon without CUDA
 #
