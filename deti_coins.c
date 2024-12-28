@@ -1,11 +1,3 @@
-//
-// Tomás Oliveira e Silva,  October 2024
-//
-// Arquiteturas de Alto Desempenho 2024/2025
-//
-// DETI coins main program (possible solution)
-//
-
 #include <omp.h>
 #include <time.h>
 #include <stdio.h>
@@ -112,7 +104,7 @@ static void all_md5_tests(void)
 // saving are reporting DETI coins
 //
 
-#include "deti_coins_vault.h"
+#include "deti_coins_vault.h" 
 
 
 //
@@ -166,52 +158,59 @@ static volatile int stop_request;
 
 int main(int argc, char **argv)
 {
-  u32_t seconds, n_random_words;
+    u32_t seconds, n_random_words;
 
-  //
-  // correctness tests (-t command line option)
-  //
-  if (argc == 2 && argv[1][0] == '-' && argv[1][1] == 't')
-  {
+    // Debug print to ensure arguments are correctly received
+    printf("argc: %d\n", argc);
+    for (int i = 0; i < argc; i++) {
+        printf("Argument %d: %s\n", i, argv[i]);
+    }
+
+    // Correctness tests (-t command line option)
+    if (argc == 2 && argv[1][0] == '-' && argv[1][1] == 't')
+    {
 #ifdef SEARCH_UTILITIES
-    test_next_value_to_try_ascii(); // this will help warming up (turbo boost) the processor!
+        test_next_value_to_try_ascii(); // this will help warming up (turbo boost) the processor!
 #endif
-    all_md5_tests();
-    return 0;
-  }
-  //
-  // search for DETI coins (-s command line option)
-  //
-  if ((argc >= 2 && argc <= 4) && argv[1][0] == '-' && argv[1][1] == 's')
-  {
-    srand((unsigned int)time(NULL));
-    seconds = (argc > 2) ? parse_time_duration(argv[2]) : 1800u;
-    if (seconds == 0u)
-    {
-      fprintf(stderr, "main: bad number of seconds --- format [Nd][Nh][Nm][N[s]], where each N is a number and [] means optional\n");
-      exit(1);
+        all_md5_tests();
+        return 0;
     }
-    if (seconds < 120u) seconds = 120u;  // At least 2 minutes
-    if (seconds > 7200u) seconds = 7200u;  // Max 2 hours
-    n_random_words = (argc > 3) ? (u32_t)atol(argv[3]) : 1u;
-    if (n_random_words > 9u) n_random_words = 9u;
-    stop_request = 0;
-    //(void)signal(SIGALRM, alarm_signal_handler);
-    //(void)alarm((unsigned int)seconds);
 
-    // Only OpenCL search option now
-    switch (argv[1][2])
+    // Search for DETI coins (-s command line option)
+    if ((argc >= 2 && argc <= 4) && argv[1][0] == '-' && argv[1][1] == 's')
     {
-      case '5':  // OpenCL search option
-        printf("searching for %u seconds using OpenCL\n", seconds);
-        fflush(stdout);
+        // Ensure sufficient arguments
+        if (argc < 4) {
+            printf("main: insufficient arguments for -s option. Usage: -s <seconds> <random_words>\n");
+            return 1;
+        }
+
+        // Parse seconds and random words from command-line arguments
+        // seconds = (u32_t)atoi(argv[2]);  // Convert seconds argument to integer
+        seconds = parse_time_duration(argv[2]);  // Use the parse_time_duration function
+
+        n_random_words = (u32_t)atoi(argv[3]);  // Convert random words argument to integer
+
+        if (seconds == 0u) {
+            printf("main: bad number of seconds --- format [Nd][Nh][Nm][N[s]], where each N is a number and [] means optional\n");
+            return 1;
+        }
+
+        // Ensure seconds is within a reasonable range
+        if (seconds < 120u) seconds = 120u;  // At least 2 minutes
+        if (seconds > 7200u) seconds = 7200u;  // Max 2 hours
+
+        // Debug print to ensure this block is being reached
+        printf("Starting search for DETI coins for %u seconds with %u random words...\n", seconds, n_random_words);
+
+        stop_request = 0;
+
+        // Call the OpenCL search function
         deti_coins_opencl_search(n_random_words);  // Invoke OpenCL-based search
-        break;
-      default:
-        printf("main: unknown option '%c'\n", argv[1][2]);
-        break;
+        return 0;
     }
+
+    // Default case for other arguments
+    printf("No valid command-line options passed.\n");
     return 0;
-  }
-  return 0;
 }
