@@ -1,72 +1,41 @@
-#
-# makefile for the first practical assignment (A1)
-#
+# Compiler and flags
+CXX = g++
+CXXFLAGS = -O3 -std=c++11 -Wall
 
-#
-# CUDA installation directory --- /usr/local/cuda or $(CUDA_HOME)
-#
-CUDA_DIR = /usr/local/cuda
+# OpenCL flags (path to OpenCL header and library directories)
+OPENCL_INC = C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.6\include
+OPENCL_LIB = C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.6\lib\x64
 
-#
-# OpenCL installation directory (for a NVidia graphics card, sama as CUDA)
-#
-OPENCL_DIR = $(CUDA_DIR)
+# OpenCL runtime libraries
+OPENCL_LIBS = -lOpenCL
 
-#
-# CUDA device architecture
-#   GeForce GTX 1660 Ti --- sm_75
-#   RTX A2000 Ada --------- sm_86
-#   RTX A6000 Ada --------- sm_86
-#   RTX 4070 -------------- sm_89
-#
-CUDA_ARCH = sm_75
+# Source and object files
+SRC_FILES = main.cpp md5_opencl.cpp opencl_driver_api_utilities.cpp
+OBJ_FILES = $(SRC_FILES:.cpp=.o)
 
+# Kernel file
+KERNEL_FILE = md5_opencl_kernel.cl
 
-#
-# source code files
-#
-SRC       = deti_coins.c
-H_FILES   = cpu_utilities.h
-H_FILES  += md5.h md5_test_data.h md5_cpu.h md5_cpu_avx.h md5_cpu_neon.h
-H_FILES  += deti_coins_vault.h deti_coins_cpu_search.h deti_coins_cpu_avx_search.h
-C_FILES   = cuda_driver_api_utilities.h md5_cuda.h
+# Output binary
+OUTPUT = deti_miner.exe
 
+# Default target
+all: $(OUTPUT)
 
-#
-# clean up
-#
+# Rule to compile the program
+$(OUTPUT): $(OBJ_FILES) $(KERNEL_FILE)
+	$(CXX) $(OBJ_FILES) -o $(OUTPUT) $(OPENCL_LIBS)
+
+# Compile the OpenCL-related C++ files
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -I$(OPENCL_INC) -c $< -o $@
+
+# Rule to clean the build
 clean:
-	rm -f a.out
-	rm -f deti_coins_intel
-	rm -f deti_coins_apple
-	rm -f deti_coins_intel_cuda md5_cuda_kernel.cubin deti_coins_cuda_kernel_search.cubin
+	del /f /q $(OBJ_FILES) $(OUTPUT)
 
-
-#
-# compile for Intel/AMD processors without CUDA
-#
-deti_coins_intel:	$(SRC) $(H_FILES)
-	cc -Wall -O2 -mavx2 -DUSE_CUDA=0 $(SRC) -o deti_coins_intel
-
-
-#
-# compilation for Apple silicon without CUDA
-#
-deti_coins_apple:	$(SRC) $(H_FILES)
-	cc -Wall -O2 -DUSE_CUDA=0 $(SRC) -o deti_coins_apple
-
-
-#
-# compile for Intel/AMD processors with CUDA
-#
-deti_coins_intel_cuda:	$(SRC) $(H_FILES) $(C_FILES) md5_cuda_kernel.cubin
-	cc -Wall -O2 -mavx2 -DUSE_CUDA=1 -I$(CUDA_DIR)/include $(SRC) -o deti_coins_intel_cuda -L$(CUDA_DIR)/lib64 -lcuda
-
-md5_cuda_kernel.cubin:			md5.h md5_cuda_kernel.cu
-	nvcc -arch=$(CUDA_ARCH) --compiler-options -O2,-Wall -I$(CUDA_DIR)/include --cubin md5_cuda_kernel.cu -o md5_cuda_kernel.cubin
-
-deti_coins_cuda_kernel_search.cubin:	md5.h deti_coins_cuda_kernel_search.cu
-	nvcc -arch=$(CUDA_ARCH) --compiler-options -O2,-Wall -I$(CUDA_DIR)/include --cubin deti_coins_cuda_kernel_search.cu -o deti_coins_cuda_kernel_search.cubin
-
-WebAssembly:			web_assembly.c
-	emcc -Wall -O2 web_assembly.c -o web_assembly.html	
+# Rule to print the paths and check the setup
+print:
+	@echo "OpenCL Include Path: $(OPENCL_INC)"
+	@echo "OpenCL Library Path: $(OPENCL_LIB)"
+	@echo "Kernel File: $(KERNEL_FILE)"
