@@ -10,7 +10,6 @@
 #include <stdio.h>   // For fprintf and printf
 #include "deti_coins_vault.h"
 
-
 // Define u32_t if not already defined
 typedef uint32_t u32_t;
 
@@ -24,6 +23,9 @@ static cl_kernel kernel = NULL;
 static cl_program program = NULL;
 static cl_device_id device = NULL;
 static cl_mem device_data = NULL;
+
+// Declare cleanup_opencl function before its usage
+static void cleanup_opencl(void);  // Declaration of the cleanup function
 
 // Value generation function used across components
 static u32_t next_value_to_try_ascii(u32_t v) {
@@ -103,7 +105,6 @@ static void initialize_opencl(const char* kernel_source) {
 
 // Main search function
 static void deti_coins_opencl_search(u32_t random_words) {
-
     typedef uint32_t u32_t;
 
     const u32_t block_size = 128;
@@ -115,6 +116,10 @@ static void deti_coins_opencl_search(u32_t random_words) {
     u32_t idx, max_idx, custom_word1, custom_word2;
     custom_word1 = custom_word2 = 0x20202020;
     max_idx = 1u;
+
+    // Initialize OpenCL
+    const char *kernel_source = "your_kernel_code_here"; // Set the OpenCL kernel source
+    initialize_opencl(kernel_source);
 
     // Create device buffer
     device_data = clCreateBuffer(context, CL_MEM_READ_WRITE, 
@@ -169,7 +174,7 @@ static void deti_coins_opencl_search(u32_t random_words) {
         n_attempts += (1 << 20) * 64u;
     }
 
-    // Cleanup
+    // Cleanup OpenCL resources
     free(host_data);
     clReleaseMemObject(device_data);
     
@@ -178,9 +183,12 @@ static void deti_coins_opencl_search(u32_t random_words) {
            n_coins, (n_coins == 1ul) ? "" : "s",
            n_attempts, (n_attempts == 1ul) ? "" : "s",
            (double)n_attempts / (double)(1ull << 32));
+
+    // Cleanup OpenCL
+    cleanup_opencl();  // Call cleanup
 }
 
-// Cleanup function
+// Cleanup function definition
 static void cleanup_opencl(void) {
     if (kernel) clReleaseKernel(kernel);
     if (program) clReleaseProgram(program);
