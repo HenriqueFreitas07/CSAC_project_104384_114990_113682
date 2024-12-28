@@ -25,7 +25,7 @@ static void make_random_md5_test_data(void)
 
   srand(time(NULL));
   for(i = 0u;i < N_MESSAGES * 13u;i++)
-    host_md5_test_data[i] = ((u32_t)random() & 0xFFFF) | ((u32_t)random() << 16u); // the values for i % 16 == 13, 14, or 15 will be ignored
+    host_md5_test_data[i] = ((u32_t)rand() & 0xFFFF) | ((u32_t)rand() << 16u); // the values for i % 16 == 13, 14, or 15 will be ignored
 }
 
 #endif

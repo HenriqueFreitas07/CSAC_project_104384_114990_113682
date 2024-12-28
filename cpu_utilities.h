@@ -9,6 +9,7 @@
 #ifndef CPU_UTILITIES
 #define CPU_UTILITIES
 
+typedef uint32_t u32_t;
 
 //
 // macro to reserve the order of the bytes in a 32-bit integer
@@ -68,7 +69,7 @@ static void time_measurement(void)
   measured_cpu_time[0] = measured_cpu_time[1];
   (void)clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&measured_cpu_time[1]);
   measured_wall_time[0] = measured_wall_time[1];
-  (void)clock_gettime(CLOCK_MONOTONIC_RAW,&measured_wall_time[1]);
+  (void)clock_gettime(CLOCK_MONOTONIC,&measured_wall_time[1]);
 }
 
 static double cpu_time_delta_ns(void)
@@ -104,7 +105,7 @@ static u32_t parse_time_duration(const char *time_duration)
       case '0' ... '9': // gcc or clang feature
         if(n < 0l)
           n = 0l;
-        if(n >= (1l << 32))
+        if(n >= (1ULL << 32))
           return 0u; // integer overflow
         n = 10l * n + (long)(*time_duration - '0');
         break;
@@ -121,7 +122,7 @@ static u32_t parse_time_duration(const char *time_duration)
         if(hours < 0l) hours = 0l;
         if(days < 0l) days = 0l;
         n = seconds + 60l * (minutes + 60l * (hours + 24l * days));
-        return (n >= (1l << 32)) ? 0u : (u32_t)n;
+        return (n >= (1ull << 32)) ? 0u : (u32_t)n;
     }
 }
 

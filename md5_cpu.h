@@ -12,6 +12,8 @@
 #ifndef MD5_CPU
 #define MD5_CPU
 
+#include "md5_test_data.h"
+
 //
 // CPU-only implementation (assumes a little-endian CPU)
 //

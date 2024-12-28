@@ -6,6 +6,13 @@
 // save_deti_coin() --- save a DETI coin in a temporary buffer; with a NULL argument, update the DETI coins file vault
 //
 
+#include <stdint.h>
+#include "cpu_utilities.h"
+#include "md5_cpu.h"
+typedef uint32_t u32_t;  // Define u32_t as an alias for uint32_t
+typedef uint8_t u08_t;
+
+
 #ifndef DETI_COINS_VAULT
 #define DETI_COINS_VAULT
 

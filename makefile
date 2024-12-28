@@ -4,7 +4,7 @@ OPENCL_LIB = "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.6/lib/x64"
 OPENCL_LIB_NAME = OpenCL
 
 # Source files
-C_SRCS = main.c
+C_SRCS = deti_coins.c
 CL_SRC = md5_opencl_kernel.cl
 
 # Output binary

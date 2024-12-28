@@ -1,6 +1,8 @@
 #ifndef DETI_COINS_OPENCL_H
 #define DETI_COINS_OPENCL_H
 
+#define CL_TARGET_OPENCL_VERSION 300
+
 #include <CL/cl.h>
 #include "md5.h"
 #include <stdint.h>  // For uint32_t and other standard integer types
