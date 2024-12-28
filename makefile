@@ -1,49 +1,34 @@
-# Compiler and flags
-CXX = g++
-CXXFLAGS = -O3 -std=c++11 -Wall
+# Paths to OpenCL SDK (assuming CUDA)
+OPENCL_INC = "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.6/include"
+OPENCL_LIB = "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.6/lib/x64"
+OPENCL_LIB_NAME = OpenCL.lib  # The actual OpenCL library name
 
-# OpenCL flags (path to OpenCL header and library directories)
-OPENCL_INC = C:/Program\ Files/NVIDIA\ GPU\ Computing\ Toolkit/CUDA/v12.6/include
-OPENCL_LIB = C:/Program\ Files/NVIDIA\ GPU\ Computing\ Toolkit/CUDA/v12.6/lib/x64
-
-# OpenCL runtime libraries
-OPENCL_LIBS = -lOpenCL
-
-# Source and object files
-SRC_FILES = deti_coins.c md5_opencl.cpp opencl_driver_api_utilities.cpp
-OBJ_FILES = $(SRC_FILES:.c=.o) $(SRC_FILES:.cpp=.o)
-
-# Kernel file
-KERNEL_FILE = md5_opencl_kernel.cl
+# Source files
+C_SRCS = main.c
+CL_SRC = md5_opencl_kernel.cl
 
 # Output binary
-OUTPUT = deti_miner.exe
+OUT_BIN = deti_coins_opencl.exe
 
-# Default target
-all: $(OUTPUT)
+# Compiler and linker
+CC = gcc   # Or use cl if using MSVC
+CFLAGS = -I$(OPENCL_INC) -O2 -Wall
+LDFLAGS = -L$(OPENCL_LIB) -l$(OPENCL_LIB_NAME)
 
-# Rule to compile the program
-$(OUTPUT): $(OBJ_FILES) $(KERNEL_FILE)
-	@echo "Linking object files into the final executable: $(OUTPUT)"
-	$(CXX) $(OBJ_FILES) -o $(OUTPUT) -L$(OPENCL_LIB) $(OPENCL_LIBS)
+# Compiler for OpenCL
+CL_COMPILER = cl
 
-# Compile .c files into .o files
-%.o: %.c
-	@echo "Compiling C file: $<"
-	$(CXX) $(CXXFLAGS) -I$(OPENCL_INC) -c $< -o $@
+# Targets
+all: $(OUT_BIN)
 
-# Compile .cpp files into .o files
-%.o: %.cpp
-	@echo "Compiling CPP file: $<"
-	$(CXX) $(CXXFLAGS) -I$(OPENCL_INC) -c $< -o $@
+$(OUT_BIN): $(C_SRCS) $(CL_SRC)
+	$(CC) $(CFLAGS) -o $(OUT_BIN) $(C_SRCS) $(LDFLAGS)
 
-# Rule to clean the build
+# Rule to compile .cl files (OpenCL kernels)
+%.bin: %.cl
+	$(CL_COMPILER) -cl-fast-relaxed-math -DCL_VERSION_1_2 -cl-kernel-options=-cl-std=CL1.2 -o $@ $<
+
 clean:
-	@echo "Cleaning up object files and executable..."
-	del /f /q $(OBJ_FILES) $(OUTPUT)
+	rm -f $(OUT_BIN) *.bin
 
-# Rule to print the paths and check the setup
-print:
-	@echo "OpenCL Include Path: $(OPENCL_INC)"
-	@echo "OpenCL Library Path: $(OPENCL_LIB)"
-	@echo "Kernel File: $(KERNEL_FILE)"
+.PHONY: all clean
