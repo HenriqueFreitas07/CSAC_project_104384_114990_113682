@@ -3,15 +3,15 @@ CXX = g++
 CXXFLAGS = -O3 -std=c++11 -Wall
 
 # OpenCL flags (path to OpenCL header and library directories)
-OPENCL_INC = C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.6\include
-OPENCL_LIB = C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.6\lib\x64
+OPENCL_INC = C:/Program\ Files/NVIDIA\ GPU\ Computing\ Toolkit/CUDA/v12.6/include
+OPENCL_LIB = C:/Program\ Files/NVIDIA\ GPU\ Computing\ Toolkit/CUDA/v12.6/lib/x64
 
 # OpenCL runtime libraries
 OPENCL_LIBS = -lOpenCL
 
 # Source and object files
-SRC_FILES = main.cpp md5_opencl.cpp opencl_driver_api_utilities.cpp
-OBJ_FILES = $(SRC_FILES:.cpp=.o)
+SRC_FILES = deti_coins.c md5_opencl.cpp opencl_driver_api_utilities.cpp
+OBJ_FILES = $(SRC_FILES:.c=.o) $(SRC_FILES:.cpp=.o)
 
 # Kernel file
 KERNEL_FILE = md5_opencl_kernel.cl
@@ -24,14 +24,22 @@ all: $(OUTPUT)
 
 # Rule to compile the program
 $(OUTPUT): $(OBJ_FILES) $(KERNEL_FILE)
-	$(CXX) $(OBJ_FILES) -o $(OUTPUT) $(OPENCL_LIBS)
+	@echo "Linking object files into the final executable: $(OUTPUT)"
+	$(CXX) $(OBJ_FILES) -o $(OUTPUT) -L$(OPENCL_LIB) $(OPENCL_LIBS)
 
-# Compile the OpenCL-related C++ files
+# Compile .c files into .o files
+%.o: %.c
+	@echo "Compiling C file: $<"
+	$(CXX) $(CXXFLAGS) -I$(OPENCL_INC) -c $< -o $@
+
+# Compile .cpp files into .o files
 %.o: %.cpp
+	@echo "Compiling CPP file: $<"
 	$(CXX) $(CXXFLAGS) -I$(OPENCL_INC) -c $< -o $@
 
 # Rule to clean the build
 clean:
+	@echo "Cleaning up object files and executable..."
 	del /f /q $(OBJ_FILES) $(OUTPUT)
 
 # Rule to print the paths and check the setup
