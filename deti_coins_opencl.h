@@ -101,6 +101,9 @@ static void initialize_opencl(const char* kernel_source) {
 
 // Main search function
 static void deti_coins_opencl_search(u32_t random_words) {
+
+    typedef uint32_t u32_t;
+
     const u32_t block_size = 128;
     const u32_t size = 1024u;
     cl_int err;
