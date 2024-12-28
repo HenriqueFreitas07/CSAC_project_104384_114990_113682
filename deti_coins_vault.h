@@ -13,6 +13,8 @@
 
 #define STORE_DETI_COINS()  save_deti_coin(NULL)
 
+
+
 static void save_deti_coin(u32_t coin[13])
 {
 # define MAX_SAVED_DETI_COINS 65536u

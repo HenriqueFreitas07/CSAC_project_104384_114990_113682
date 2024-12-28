@@ -1,10 +1,19 @@
-// deti_coins_opencl.h - Main header containing all OpenCL implementations
-
 #ifndef DETI_COINS_OPENCL_H
 #define DETI_COINS_OPENCL_H
 
 #include <CL/cl.h>
 #include "md5.h"
+#include <stdint.h>  // For uint32_t and other standard integer types
+#include <stdlib.h>  // For malloc and free
+#include <stdio.h>   // For fprintf and printf
+#include "deti_coins_vault.h"
+
+
+// Define u32_t if not already defined
+typedef uint32_t u32_t;
+
+// Declare stop_request globally or pass as an argument
+static volatile int stop_request = 0;  // Declare as global flag
 
 // OpenCL context globals
 static cl_context context = NULL;
@@ -58,7 +67,7 @@ static void initialize_opencl(const char* kernel_source) {
     }
 
     // Create command queue
-    queue = clCreateCommandQueue(context, device, 0, &err);
+    queue = clCreateCommandQueueWithProperties(context, device, 0, &err);
     if (err != CL_SUCCESS) {
         fprintf(stderr, "Failed to create command queue\n");
         exit(1);
@@ -108,7 +117,7 @@ static void deti_coins_opencl_search(u32_t random_words) {
     
     u32_t *host_data = (u32_t *)malloc(size * sizeof(u32_t));
 
-    for(n_attempts = n_coins = 0ul; stop_request == 0; n_attempts += (1<<20)*64u) {
+    while (stop_request == 0) { // check stop_request flag
         host_data[0] = 1u;
 
         // Copy data to device
@@ -132,12 +141,12 @@ static void deti_coins_opencl_search(u32_t random_words) {
                                 size * sizeof(u32_t), host_data, 0, NULL, NULL);
 
         // Process results
-        if(host_data[0] > max_idx)
+        if (host_data[0] > max_idx)
             max_idx = host_data[0];
 
-        for(idx = 1u; idx < host_data[0] && idx <= size - 13u; idx += 13) {
-            if(idx <= size - 13) {
-                save_deti_coin(&host_data[idx]);
+        for (idx = 1u; idx < host_data[0] && idx <= size - 13u; idx += 13) {
+            if (idx <= size - 13) {
+                save_deti_coin(&host_data[idx]);  // Ensure save_deti_coin is declared and defined
                 n_coins++;
             } else {
                 fprintf(stderr, "deti_coins_opencl_search: wasted DETI coin\n");
@@ -145,65 +154,33 @@ static void deti_coins_opencl_search(u32_t random_words) {
         }
 
         // Update words
-        if(custom_word1 != 0x7E7E7E7Eu)
+        if (custom_word1 != 0x7E7E7E7Eu)
             custom_word1 = next_value_to_try_ascii(custom_word1);
         else {
             custom_word1 = 0x20202020u;
             custom_word2 = next_value_to_try_ascii(custom_word2);
         }
+
+        n_attempts += (1 << 20) * 64u;
     }
 
     // Cleanup
     free(host_data);
     clReleaseMemObject(device_data);
     
-    STORE_DETI_COINS();
+    STORE_DETI_COINS(); // Ensure STORE_DETI_COINS is defined
     printf("deti_coins_opencl_search: %u DETI coin%s found in %u attempt%s (expected %.2f coins)\n",
            n_coins, (n_coins == 1ul) ? "" : "s",
            n_attempts, (n_attempts == 1ul) ? "" : "s",
-           (double)n_attempts / (double)(1ul << 32));
-}
-
-// MD5 computation functions
-static void md5_opencl(u32_t *data, u32_t *hash, u32_t n_messages) {
-    cl_int err;
-    
-    // Create buffers for MD5 computation
-    cl_mem d_data = clCreateBuffer(context, CL_MEM_READ_ONLY, 
-                                 n_messages * 13u * sizeof(u32_t), NULL, &err);
-    cl_mem d_hash = clCreateBuffer(context, CL_MEM_WRITE_ONLY, 
-                                 n_messages * 4u * sizeof(u32_t), NULL, &err);
-
-    // Transfer data
-    err = clEnqueueWriteBuffer(queue, d_data, CL_TRUE, 0,
-                             n_messages * 13u * sizeof(u32_t), data, 0, NULL, NULL);
-
-    // Set kernel arguments
-    clSetKernelArg(kernel, 0, sizeof(cl_mem), &d_data);
-    clSetKernelArg(kernel, 1, sizeof(cl_mem), &d_hash);
-
-    // Launch kernel
-    size_t global_work_size = n_messages;
-    size_t local_work_size = 128;
-    err = clEnqueueNDRangeKernel(queue, kernel, 1, NULL,
-                                &global_work_size, &local_work_size,
-                                0, NULL, NULL);
-
-    // Read results
-    err = clEnqueueReadBuffer(queue, d_hash, CL_TRUE, 0,
-                            n_messages * 4u * sizeof(u32_t), hash, 0, NULL, NULL);
-
-    // Cleanup
-    clReleaseMemObject(d_data);
-    clReleaseMemObject(d_hash);
+           (double)n_attempts / (double)(1ull << 32));
 }
 
 // Cleanup function
 static void cleanup_opencl(void) {
-    if(kernel) clReleaseKernel(kernel);
-    if(program) clReleaseProgram(program);
-    if(queue) clReleaseCommandQueue(queue);
-    if(context) clReleaseContext(context);
+    if (kernel) clReleaseKernel(kernel);
+    if (program) clReleaseProgram(program);
+    if (queue) clReleaseCommandQueue(queue);
+    if (context) clReleaseContext(context);
 }
 
 #endif // DETI_COINS_OPENCL_H
