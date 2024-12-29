@@ -26,13 +26,13 @@ void deti_coins_cuda_search(u32_t random_words) {
 
     u32_t size = 1024u;
     // Initialize CUDA resources
-    u32_t n_attempts = 0, n_coins = 0;
+    u64_t n_attempts = 0, n_coins = 0;
     u32_t idx,max_idx,custom_word1,custom_word2;
     custom_word1=custom_word2=0x20202020;
 
     initialize_cuda(0, "md5_cuda_kernel.cubin", "cuda_md5_kernel",size,0u);
     max_idx=1u;
-   for(n_attempts = n_coins = 0ul;stop_request == 0;n_attempts+=(1<<20)*64u)
+   for(n_attempts = n_coins = 0ul;stop_request == 0;n_attempts+=(64ul<<20ul))
    {
 
 	host_data[0]=1u;
@@ -78,7 +78,7 @@ void deti_coins_cuda_search(u32_t random_words) {
    }
 
    STORE_DETI_COINS();	
-   printf("deti_coins_cuda_search: %u DETI coin%s found in %u attempt%s (expected %.2f coins)\n",
+   printf("deti_coins_cuda_search: %lu DETI coin%s found in %lu attempt%s (expected %.2f coins)\n",
 		   n_coins, 
 		   (n_coins == 1ul) ? "" : "s", 
 		   n_attempts, 
