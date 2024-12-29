@@ -14,9 +14,9 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <sys/resource.h>
-#include <mpi.h>
-
-//
+#if defined(USE_CUDA) && USE_CUDA==0
+	#include <mpi.h>
+#endif
 // number of threads
 //
 
@@ -143,8 +143,10 @@ static void alarm_signal_handler(int dummy)
 
 #include "deti_coins_cpu_search.h"
 #include "deti_coins_cpu_special_search.h"
-#include "deti_coins_cpu_OpenMP_search.h"
-#include "deti_coins_cpu_MPI_OpenMP_search.h"
+#if USE_CUDA==0
+	#include "deti_coins_cpu_OpenMP_search.h"
+	#include "deti_coins_cpu_MPI_OpenMP_search.h"
+#endif
 
 #include "search_utilities.h"
 #ifdef MD5_CPU_AVX
@@ -168,8 +170,10 @@ static void alarm_signal_handler(int dummy)
 
 int main(int argc,char **argv)
 {
+   #if USE_CUDA==0
+	   int n_processes,rank;
+   #endif 
    u32_t seconds,n_random_words;
-   int n_processes,rank;
   //
   // correctness tests (-t command line option)
   //
@@ -363,3 +367,4 @@ int main(int argc,char **argv)
   fprintf(stderr,"                                           #   n_random_words is the number of 4-byte words to use\n");
   return 1;
 }
+//
