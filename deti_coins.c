@@ -205,7 +205,58 @@ int main(int argc, char **argv)
 
         stop_request = 0;
 
-        // Call the OpenCL search function
+        // OpenCL Debugging Step: Print device information
+        cl_uint num_devices;
+        cl_int err;
+        err = clGetDeviceIDs(NULL, CL_DEVICE_TYPE_ALL, 0, NULL, &num_devices);
+        if (err != CL_SUCCESS) {
+            printf("Error: Failed to get device IDs (%d)\n", err);
+            return 1;
+        }
+        printf("OpenCL Devices Found: %u\n", num_devices);
+
+        // Debugging: Show OpenCL platform and device information
+        cl_platform_id platform_id;
+        err = clGetPlatformIDs(1, &platform_id, NULL);
+        if (err != CL_SUCCESS) {
+            printf("Error: Failed to get platform IDs (%d)\n", err);
+            return 1;
+        }
+
+        char platform_name[128];
+        err = clGetPlatformInfo(platform_id, CL_PLATFORM_NAME, sizeof(platform_name), platform_name, NULL);
+        if (err != CL_SUCCESS) {
+            printf("Error: Failed to get platform name (%d)\n", err);
+            return 1;
+        }
+        printf("OpenCL Platform: %s\n", platform_name);
+
+        cl_device_id device_id;
+        err = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 1, &device_id, NULL); // Get first GPU device
+        if (err != CL_SUCCESS) {
+            printf("Error: Failed to get device ID (%d)\n", err);
+            return 1;
+        }
+
+        // OpenCL Debugging: Check the device's name
+        char device_name[128];
+        err = clGetDeviceInfo(device_id, CL_DEVICE_NAME, sizeof(device_name), device_name, NULL);
+        if (err != CL_SUCCESS) {
+            printf("Error: Failed to get device name (%d)\n", err);
+            return 1;
+        }
+        printf("OpenCL Device: %s\n", device_name);
+
+        // OpenCL Debugging: Check the device capabilities
+        cl_uint compute_units;
+        err = clGetDeviceInfo(device_id, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(compute_units), &compute_units, NULL);
+        if (err != CL_SUCCESS) {
+            printf("Error: Failed to get compute units info (%d)\n", err);
+            return 1;
+        }
+        printf("OpenCL Device Compute Units: %u\n", compute_units);
+
+        // Now, call the OpenCL search function
         deti_coins_opencl_search(n_random_words);  // Invoke OpenCL-based search
         return 0;
     }

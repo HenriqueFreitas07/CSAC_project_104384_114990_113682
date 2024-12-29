@@ -27,7 +27,9 @@ static void deti_coins_opencl_kernel_search(void)
     }
     
     // Get device
-    err = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 1, &device, NULL);
+    // err = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 1, &device, NULL);
+    err = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_ALL, 1, &device_id, NULL); // Try any available device (GPU/CPU)
+
     if (err != CL_SUCCESS) {
         printf("Error: Failed to get device ID!\n");
         return;
