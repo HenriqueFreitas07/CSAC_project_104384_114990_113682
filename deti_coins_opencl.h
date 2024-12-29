@@ -45,7 +45,7 @@ static u32_t next_value_to_try_ascii(u32_t v) {
 }
 
 // OpenCL initialization function
-static void initialize_opencl(const char* kernel_source) {
+static void initialize_opencl(const char* kernel_file_path) {
     cl_int err;
     cl_platform_id platform;
 
@@ -77,14 +77,33 @@ static void initialize_opencl(const char* kernel_source) {
         exit(1);
     }
 
+    // Load kernel source code from file
+    FILE *file = fopen(kernel_file_path, "r");
+    if (!file) {
+        fprintf(stderr, "Failed to open kernel file: %s\n", kernel_file_path);
+        exit(1);
+    }
+
+    fseek(file, 0, SEEK_END);
+    size_t kernel_size = ftell(file);
+    rewind(file);
+
+    char *kernel_source = (char *)malloc(kernel_size + 1);
+    fread(kernel_source, 1, kernel_size, file);
+    kernel_source[kernel_size] = '\0'; // Null-terminate the string
+    fclose(file);
+
     // Create and build program
-    program = clCreateProgramWithSource(context, 1, &kernel_source, NULL, &err);
+    program = clCreateProgramWithSource(context, 1, (const char **)&kernel_source, &kernel_size, &err);
+    free(kernel_source);
+
     if (err != CL_SUCCESS) {
         fprintf(stderr, "Failed to create program\n");
         exit(1);
     }
 
-    err = clBuildProgram(program, 1, &device, NULL, NULL, NULL);
+    // err = clBuildProgram(program, 1, &device, NULL, NULL, NULL);
+    err = clBuildProgram(program, 1, &device, "-I .", NULL, NULL);
     if (err != CL_SUCCESS) {
         size_t log_size;
         clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
@@ -103,18 +122,9 @@ static void initialize_opencl(const char* kernel_source) {
     }
 }
 
-// OpenCL kernel code (replace "your_kernel_code_here" with actual OpenCL code)
-const char* kernel_source = R"(
-__kernel void md5_opencl_kernel(__global uint32_t* input_data, __global uint32_t* output_data) {
-    int id = get_global_id(0);
-    // Example kernel logic (replace with actual computation)
-    output_data[id] = input_data[id] * 2;  // Placeholder operation
-}
-)";
 
 // Main search function
 static void deti_coins_opencl_search(u32_t random_words) {
-
     printf("Inside deti_coins_opencl_search with random_words = %u\n", random_words);  // Debug print
 
     const u32_t block_size = 128;
@@ -128,20 +138,20 @@ static void deti_coins_opencl_search(u32_t random_words) {
     max_idx = 1u;
 
     // Initialize OpenCL
-    initialize_opencl(kernel_source);
+    initialize_opencl("md5_opencl_kernel.cl");
 
     // Create device buffer
     device_data = clCreateBuffer(context, CL_MEM_READ_WRITE, 
-                               size * sizeof(u32_t), NULL, &err);
+                                 size * sizeof(u32_t), NULL, &err);
     
     u32_t *host_data = (u32_t *)malloc(size * sizeof(u32_t));
 
-    while (stop_request == 0) { // check stop_request flag
+    while (stop_request == 0) {  // Check stop_request flag
         host_data[0] = 1u;
 
         // Copy data to device
         err = clEnqueueWriteBuffer(queue, device_data, CL_TRUE, 0,
-                                 size * sizeof(u32_t), host_data, 0, NULL, NULL);
+                                   size * sizeof(u32_t), host_data, 0, NULL, NULL);
 
         // Set kernel arguments
         clSetKernelArg(kernel, 0, sizeof(u32_t), &custom_word1);
@@ -152,12 +162,12 @@ static void deti_coins_opencl_search(u32_t random_words) {
         size_t global_work_size = 1 << 20;
         size_t local_work_size = block_size;
         err = clEnqueueNDRangeKernel(queue, kernel, 1, NULL,
-                                    &global_work_size, &local_work_size,
-                                    0, NULL, NULL);
+                                      &global_work_size, &local_work_size,
+                                      0, NULL, NULL);
 
         // Read results
         err = clEnqueueReadBuffer(queue, device_data, CL_TRUE, 0,
-                                size * sizeof(u32_t), host_data, 0, NULL, NULL);
+                                  size * sizeof(u32_t), host_data, 0, NULL, NULL);
 
         // Process results
         if (host_data[0] > max_idx)
@@ -186,8 +196,8 @@ static void deti_coins_opencl_search(u32_t random_words) {
     // Cleanup OpenCL resources
     free(host_data);
     clReleaseMemObject(device_data);
-    
-    STORE_DETI_COINS(); // Ensure STORE_DETI_COINS is defined
+
+    STORE_DETI_COINS();  // Ensure STORE_DETI_COINS is defined
     printf("deti_coins_opencl_search: %u DETI coin%s found in %u attempt%s (expected %.2f coins)\n",
            n_coins, (n_coins == 1ul) ? "" : "s",
            n_attempts, (n_attempts == 1ul) ? "" : "s",
