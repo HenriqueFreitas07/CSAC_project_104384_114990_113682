@@ -1,46 +1,47 @@
-// md5_opencl_kernel.cl
-__kernel void md5_opencl_kernel(
-    const u32_t v1,
-    const u32_t v2,
-    __global u32_t* data_storage_device)
+#include "md5.h"
+
+__kernel void opencl_md5_kernel(
+    const uint v1,  // Custom word 1
+    const uint v2,  // Custom word 2
+    __global uint* data_storage_device)  // Shared buffer for results
 {
-    const u32_t number_coins = 64u;
-    u32_t n, state[4], x[16], coin[13], hash[4];
-    
-    // Get global ID
-    n = get_global_id(0);
-    
-    // Initialize coin data
-    coin[0] = 0x49544544; // ITED
-    coin[1] = 0x696f6320; // ioc_
-    coin[2] = 0x7343206e; // sC_n
-    coin[3] = 0x30324341; // 02CA
-    coin[4] = 0x41203432; // A_42
-    coin[5] = 0x34314441; // 41DA
-    coin[6] = v1;
-    coin[7] = v2;
-    
-    // Thread complexity
-    coin[8] = 0x20202020;
-    coin[8] += (n % 64u) << 0; n /= 64u;
-    coin[8] += (n % 64u) << 8; n /= 64u;
-    coin[8] += (n % 64u) << 16; n /= 64u;
-    coin[8] += (n % 64u) << 24; n /= 64u;
-    coin[9] = 0x20202020;
-    coin[10] = 0x20202020;
-    coin[11] = 0x20202020;
-    coin[12] = 0x0A202020;
+    const uint number_coins = 64u;  
+    uint n, state[4], x[16], coin[13], hash[4], idx;
+    n = get_global_id(0);  // Get global thread index
+
+    uint previous;
+
+    // Mandatory for a DETI coin
+    coin[ 0u] = 0x49544544; // ITED
+    coin[ 1u] = 0x696f6320; // ioc_ 
+    coin[ 2u] = 0x7343206e; // sC_n
+    coin[ 3u] = 0x30324341; // 02CA
+    coin[ 4u] = 0x41203432; // A_42
+    coin[ 5u] = 0x34314441; // 41DA
+    coin[ 6u] = v1; 
+    coin[ 7u] = v2; 
+    // Insert complexity with the thread ID
+    coin[ 8u] = 0x20202020; 
+    coin[ 8u] += (n % 64u) << 0; n /= 64u;
+    coin[ 8u] += (n % 64u) << 8; n /= 64u;
+    coin[ 8u] += (n % 64u) << 16; n /= 64u;
+    coin[ 8u] += (n % 64u) << 24; n /= 64u;
+    coin[ 9u] = 0x20202020; 
+    coin[10u] = 0x20202020; 
+    coin[11u] = 0x20202020; 
+    coin[12u] = 0x0A202020; 
 
     for (n = 0u; n < number_coins; n++) {
-        // MD5 computation
+
+        // MD5 computation (main logic)
         #define C(c)         (c)
-        #define ROTATE(x,n)  rotate((u32_t)(x), (u32_t)(n))
-        #define DATA(idx)    coin[idx]
+        #define ROTATE(x,n)  (((x) << (n)) | ((x) >> (32 - (n))))
+        #define DATA(idx)    coin[idx] 
         #define HASH(idx)    hash[idx]
         #define STATE(idx)   state[idx]
         #define X(idx)       x[idx]
-        
-        CUSTOM_MD5_CODE();
+
+        CUSTOM_MD5_CODE();  // Perform MD5 transformation on the coin
         
         #undef C
         #undef ROTATE
@@ -48,23 +49,24 @@ __kernel void md5_opencl_kernel(
         #undef HASH
         #undef STATE
         #undef X
-
-        // Check and store coin
-        u32_t idx = atomic_add(&data_storage_device[0], 0); // Read current index
+        
+        // Check if the hash meets the criteria and store the coin in global storage
+        idx = atomic_add(&data_storage_device[0], 0); // Read current index
         if (hash[3] == 0 && idx < 1024 - 13) {
             idx = atomic_add(&data_storage_device[0], 13);
             if (idx < 1024 - 13) {
+                // Store the found coin in the global buffer
                 for (int j = 0; j < 13; j++) {
                     data_storage_device[idx + j] = coin[j];
                 }
             }
         }
 
-        // Update values
-        for (u32_t offset = 9u; offset < 13u; offset++) {
-            u32_t previous = coin[offset-1u];
+        // Increment coin values for the next try
+        for (uint offset = 9u; offset < 13u; offset++) {
+            previous = coin[offset - 1u];
             if (previous == 0x7F7F7F7Fu) {
-                next_value_to_try(coin[offset]);
+                next_value_to_try(coin[offset]);  // Custom value increment logic
             }
             next_value_to_try(coin[offset]);
         }
