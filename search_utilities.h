@@ -20,6 +20,3 @@
     } while(0)                                              
               
 
-// next_value_to_try(v1);
-// if(v1 == 0x20202020) 
-//     next_value_to_try(v2);
