@@ -79,7 +79,7 @@ typedef unsigned long u64_t;
 #include "md5_test_data.h"
 #include "md5_cpu.h"
 #include "md5_cpu_avx.h"
-//#include "md5_cpu_avx2.h"
+#include "md5_cpu_avx2.h"
 #include "md5_cpu_neon.h"
 #if USE_CUDA > 0
 # include "cuda_driver_api_utilities.h"
@@ -151,15 +151,15 @@ static void alarm_signal_handler(int dummy)
 # include "deti_coins_cpu_avx_search.h"
 #endif
 
-//#ifdef MD5_CPU_AVX2
-//# include "deti_coins_cpu_avx2_search.h"
-//#endif
-//#ifdef MD5_CPU_NEON
-//# include "deti_coins_cpu_neon_search.h"
-//#endif
-//#if USE_CUDA > 0
-//# include "deti_coins_cuda_search.h"
-//#endif
+#ifdef MD5_CPU_AVX2
+# include "deti_coins_cpu_avx2_search.h"
+#endif
+#ifdef MD5_CPU_NEON
+# include "deti_coins_cpu_neon_search.h"
+#endif
+#if USE_CUDA > 0
+# include "deti_coins_cuda_search.h"
+#endif
 
 
 //
@@ -168,8 +168,8 @@ static void alarm_signal_handler(int dummy)
 
 int main(int argc,char **argv)
 {
-  u32_t seconds,n_random_words;
-
+   u32_t seconds,n_random_words;
+   int n_processes,rank;
   //
   // correctness tests (-t command line option)
   //
@@ -253,7 +253,6 @@ int main(int argc,char **argv)
 #endif
 #ifdef DETI_COINS_CPU_MPI_OpenMP_SEARCH
       case '8':
-        int n_processes,rank;
 
         //
         // initialize the MPI environment, and get the number of processes and the MPI number of our process (the rank)
@@ -343,10 +342,10 @@ int main(int argc,char **argv)
   fprintf(stderr,"       %s -s1 [seconds] [n_random_words]   # search for DETI coins using md5_cpu_avx()\n",argv[0]);
 #endif
 #ifdef DETI_COINS_CPU_OpenMP_SEARCH
-  fprintf(stderr,"       %s -s7 [seconds] [n_random_words]   # search for DETI coins using md5_cpu_avx()\n",argv[0]);
+  fprintf(stderr,"       %s -s7 [seconds] [n_random_words]   # search for DETI coins using openMP\n",argv[0]);
 #endif
 #ifdef DETI_COINS_CPU_MPI_OpenMP_SEARCH
-  fprintf(stderr,"       %s -s8 [seconds] [n_random_words]   # search for DETI coins using md5_cpu_avx()\n",argv[0]);
+  fprintf(stderr,"       %s -s8 [seconds] [n_random_words]   # search for DETI coins using MPI openMP\n",argv[0]);
 #endif
 #ifdef DETI_COINS_CPU_AVX2_SEARCH
   fprintf(stderr,"       %s -s2 [seconds] [n_random_words]   # search for DETI coins using md5_cpu_avx2()\n",argv[0]);
