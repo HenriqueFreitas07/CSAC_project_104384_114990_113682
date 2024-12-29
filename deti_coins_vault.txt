@@ -12,3 +12,8 @@ V00:DETI coin CsAC2024 AAD14CH+]`'%      
 V00:DETI coin CsAC2024 AAD14CPUDvL        
 V02:DETI coin CsAC2024 AAD14AOE+&@!       
 V01:DETI coin CsAC2024 AAD14DXSaCE&       
+V03:DETI coin CsAC2024 AAD14AxKp:#        
+V02:DETI coin CsAC2024 AAD14Bhy0l#        
+V03:DETI coin CsAC2024 AAD14AxKp:#        
+V02:DETI coin CsAC2024 AAD14Bhy0l#        
+V01:DETI coin CsAC2024 AAD14HCl}_,        

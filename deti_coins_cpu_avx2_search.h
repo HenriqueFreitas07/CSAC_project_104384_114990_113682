@@ -6,13 +6,13 @@
 // deti_coins_cpu_special_search() --- find DETI coins using md5_cpu()
 //
 
-#ifndef DETI_COINS_CPU_AVX_SEARCH
-#define DETI_COINS_CPU_AVX_SEARCH
+#ifndef DETI_COINS_CPU_AVX2_SEARCH
+#define DETI_COINS_CPU_AVX2_SEARCH
 
 
-static void deti_coins_cpu_avx_search(u32_t n_random_words)
+static void deti_coins_cpu_avx2_search(u32_t n_random_words)
 {
-# define N_LANES 4u
+# define N_LANES 8u
   u32_t coins[13u*N_LANES],hash[4u * N_LANES],coin[13];
   u64_t n_attempts,n_coins;
   
@@ -50,7 +50,7 @@ static void deti_coins_cpu_avx_search(u32_t n_random_words)
     //
     // compute MD5 hash
     //
-    md5_cpu_avx((v4si *)coins,(v4si *)hash);
+    md5_cpu_avx2((v8si *)coins,(v8si *)hash);
     //
     //
     //
@@ -96,7 +96,7 @@ static void deti_coins_cpu_avx_search(u32_t n_random_words)
       coins[idx*N_LANES + lane] = coins[idx*N_LANES + 0] + lane;
   }
   STORE_DETI_COINS();
-  printf("deti_coins_cpu_avx_search: %lu DETI coin%s found in %lu attempt%s (expected %.2f coins)\n",n_coins,(n_coins == 1ul) ? "" : "s",n_attempts,(n_attempts == 1ul) ? "" : "s",(double)n_attempts / (double)(1ul << 32));
+  printf("deti_coins_cpu_avx2_search: %lu DETI coin%s found in %lu attempt%s (expected %.2f coins)\n",n_coins,(n_coins == 1ul) ? "" : "s",n_attempts,(n_attempts == 1ul) ? "" : "s",(double)n_attempts / (double)(1ul << 32));
 # undef N_LANES
 }
 #endif
