@@ -90,6 +90,7 @@ extern "C" __global__ __launch_bounds__(128,1) void cuda_md5_kernel(u32_t v1,u32
 # undef X
 		//gets the current idx if it has encoutered a new coin then increments it with an atomic add
 		u32_t idx = data_storage_device[0];
+
 		//printf("Coin: %52.52s",(char *)coin);
 		if (hash[3] == 0 && idx < 1024 - 13) {
 			idx = atomicAdd(&data_storage_device[0], 13); // Atomic index increment
@@ -99,16 +100,18 @@ extern "C" __global__ __launch_bounds__(128,1) void cuda_md5_kernel(u32_t v1,u32
 				data_storage_device[idx + j] = coin[j]; // Copy coin to storage
 			}
 		}
-		for(u32_t offset=9u;offset<13u;offset++){
+
+		//incremts always on the 9th index and if one of the previous check
+		next_value_to_try(coin[9u]);
+		for(u32_t offset=10u;offset<13u;offset++){
 			// change the values 
 			previous=coin[offset-1u];
-			if (previous == 0x7F7F7F7Fu)
+			if (previous == 0x7E7E7E7Eu)
 			{
 				next_value_to_try(coin[offset]);
 			}
-
-			next_value_to_try(coin[offset]);
 		}
+
 	}
 
 }
