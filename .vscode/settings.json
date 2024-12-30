@@ -6,6 +6,7 @@
         "charconv": "cpp",
         "memory": "cpp",
         "utility": "cpp",
-        "random": "c"
+        "random": "c",
+        "cstdint": "cpp"
     }
 }

@@ -8,7 +8,7 @@
 CUDA_DIR = /usr/local/cuda
 
 #
-# OpenCL installation directory (for a NVidia graphics card, sama as CUDA)
+# OpenCL installation directory (for a NVidia graphics card, same as CUDA)
 #
 OPENCL_DIR = $(CUDA_DIR)
 
@@ -29,7 +29,8 @@ SRC       = deti_coins.c
 H_FILES   = cpu_utilities.h
 H_FILES  += md5.h md5_test_data.h md5_cpu.h md5_cpu_avx.h md5_cpu_neon.h
 H_FILES  += deti_coins_vault.h deti_coins_cpu_search.h deti_coins_cpu_avx_search.h deti_coins_cpu_OpenMP_search.h deti_coins_cpu_MPI_OpenMP_search.h deti_coins_cpu_avx2_search.h
-C_FILES   = cuda_driver_api_utilities.h md5_cuda.h
+C_FILES   = cuda_driver_api_utilities.h 
+OPEN_FILES = md5_cuda.h md5_opencl.h opencl_driver_api_utilities.h
 
 
 #
@@ -40,6 +41,7 @@ clean:
 	rm -f deti_coins_intel
 	rm -f deti_coins_apple
 	rm -f deti_coins_intel_cuda md5_cuda_kernel.cubin deti_coins_cuda_kernel_search.cubin
+	rm -f deti_coins_intel_opencl md5_opencl_kernel.cubin deti_coins_opencl_kernel_search.cubin
 
 
 #
@@ -66,6 +68,20 @@ md5_cuda_kernel.cubin:			md5.h md5_cuda_kernel.cu
 
 deti_coins_cuda_kernel_search.cubin:	md5.h deti_coins_cuda_kernel_search.cu
 	nvcc -arch=$(CUDA_ARCH) --compiler-options -O2,-Wall -I$(CUDA_DIR)/include --cubin deti_coins_cuda_kernel_search.cu -o deti_coins_cuda_kernel_search.cubin
+
+#
+# Compile for OpenCL
+#
+deti_coins_intel_opencl: $(SRC) $(H_FILES) $(OPEN_FILES)
+	cc -Wall -O2 -mavx2 -DUSE_OPENCL=1 -I$(OPENCL_DIR)/include $(SRC) -o deti_coins_intel_opencl -L$(OPENCL_DIR)/lib -lOpenCL
+
+# OpenCL kernels are loaded at runtime; no need for offline compilation
+md5_opencl_kernel.cubin:
+	@echo "OpenCL kernels are not pre-compiled. They will be loaded at runtime."
+
+deti_coins_opencl_kernel_search.cubin:
+	@echo "OpenCL kernels are not pre-compiled. They will be loaded at runtime."
+
 
 WebAssembly:			web_assembly.c
 	emcc -Wall -O2 web_assembly.c -o web_assembly.html	

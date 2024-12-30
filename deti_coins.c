@@ -5,7 +5,8 @@
 //
 // DETI coins main program (possible solution)
 //
-
+#define CL_TARGET_OPENCL_VERSION 300  
+#include <CL/cl.h>
 #include <omp.h>
 #include <time.h>
 #include <stdio.h>
@@ -14,9 +15,18 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <sys/resource.h>
+
 #if defined(USE_CUDA) && USE_CUDA==0
 	#include <mpi.h>
 #endif
+#if defined(USE_OPENCL) && USE_OPENCL==1
+  #include <CL/cl.h>
+  #include "md5_opencl.h"
+  #include "deti_coins_opencl_search.h"
+#endif
+
+static volatile int stop_request = 0;  // Declaration with initialization
+
 // number of threads
 //
 
@@ -35,6 +45,9 @@
 
 #ifndef USE_CUDA
 # define USE_CUDA 0
+#endif
+#ifndef USE_OPENCL
+# define USE_OPENCL 0
 #endif
 
 
@@ -330,6 +343,14 @@ int main(int argc,char **argv)
         deti_coins_cuda_search(n_random_words);
         break;
 #endif
+
+#ifdef DETI_COINS_OPENCL_SEARCH
+      case '5':
+        printf("searching for %u seconds using deti_coins_opencl_search()\n", seconds);
+        fflush(stdout);
+        deti_coins_opencl_search(n_random_words);
+        break;
+#endif
 #ifdef DETI_COINS_CPU_SPECIAL_SEARCH
       case '9':
         printf("searching for %u seconds using deti_coins_cpu_special_search()\n",seconds);
@@ -359,6 +380,9 @@ int main(int argc,char **argv)
 #endif
 #ifdef DETI_COINS_CUDA_SEARCH
   fprintf(stderr,"       %s -s4 [seconds] [n_random_words]   # search for DETI coins using CUDA\n",argv[0]);
+#endif
+#ifdef DETI_COINS_OPENCL_SEARCH
+  fprintf(stderr,"       %s -s5 [seconds] [n_random_words]   # search for DETI coins using OpenCL\n",argv[0]);
 #endif
 #ifdef DETI_COINS_CPU_SPECIAL_SEARCH
   fprintf(stderr,"       %s -s9 [seconds] [ignored]          # special search for DETI coins using md5_cpu()\n",argv[0]);
