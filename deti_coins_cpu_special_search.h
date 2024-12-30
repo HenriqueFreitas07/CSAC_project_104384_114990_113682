@@ -53,25 +53,26 @@ static void deti_coins_cpu_special_search(void)
     //
     //
     //
+
+    //
+    // byte-reverse each word (that's how the MD5 message digest is printed...)
+    //
+    hash_byte_reverse(hash);
+    //
+    // count the number of trailing zeros of the MD5 hash
+    //
+    n = deti_coin_power(hash);
+    
+    //
+    // update histogram
+    //
+    if (n <= MAX_POWER) 
+    {
+      histogram[n]++; 
+    }
+
     if(hash[3] == 0)
     {
-      //
-      // byte-reverse each word (that's how the MD5 message digest is printed...)
-      //
-      hash_byte_reverse(hash);
-      //
-      // count the number of trailing zeros of the MD5 hash
-      //
-      n = deti_coin_power(hash);
-      
-      //
-      // update histogram
-      //
-      if (n <= MAX_POWER) 
-      {
-        histogram[n]++; 
-      }
-
       //
       // if the number of trailing zeros is >= 32 we have a DETI coin
       //
