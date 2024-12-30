@@ -28,7 +28,7 @@ CUDA_ARCH = sm_75
 SRC       = deti_coins.c
 H_FILES   = cpu_utilities.h
 H_FILES  += md5.h md5_test_data.h md5_cpu.h md5_cpu_avx.h md5_cpu_neon.h
-H_FILES  += deti_coins_vault.h deti_coins_cpu_search.h deti_coins_cpu_avx_search.h
+H_FILES  += deti_coins_vault.h deti_coins_cpu_search.h deti_coins_cpu_avx_search.h deti_coins_cpu_OpenMP_search.h deti_coins_cpu_MPI_OpenMP_search.h deti_coins_cpu_avx2_search.h
 C_FILES   = cuda_driver_api_utilities.h md5_cuda.h
 
 
@@ -46,8 +46,7 @@ clean:
 # compile for Intel/AMD processors without CUDA
 #
 deti_coins_intel:	$(SRC) $(H_FILES)
-	cc -Wall -O2 -mavx2 -DUSE_CUDA=0 $(SRC) -o deti_coins_intel
-
+	mpicc -Wall -O2 -fopenmp -mavx2 -DUSE_CUDA=0 $(SRC) -o deti_coins_intel
 
 #
 # compilation for Apple silicon without CUDA
