@@ -89,7 +89,13 @@ static void initialize_opencl(const char* kernel_file_path) {
     rewind(file);
 
     char *kernel_source = (char *)malloc(kernel_size + 1);
-    fread(kernel_source, 1, kernel_size, file);
+    size_t bytes_read = fread(kernel_source, 1, kernel_size, file);
+    if (bytes_read != kernel_size) {
+        fprintf(stderr, "Failed to read the full kernel source. Expected %zu bytes, got %zu bytes.\n", kernel_size, bytes_read);
+        fclose(file);
+        free(kernel_source);
+        exit(1);
+    }
     kernel_source[kernel_size] = '\0'; // Null-terminate the string
     fclose(file);
 
@@ -102,7 +108,7 @@ static void initialize_opencl(const char* kernel_file_path) {
         exit(1);
     }
 
-    // err = clBuildProgram(program, 1, &device, NULL, NULL, NULL);
+    // Build the program
     err = clBuildProgram(program, 1, &device, "-I .", NULL, NULL);
     if (err != CL_SUCCESS) {
         size_t log_size;
