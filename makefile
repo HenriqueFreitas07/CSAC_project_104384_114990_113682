@@ -19,8 +19,8 @@ OPENCL_DIR = $(CUDA_DIR)
 #   RTX A6000 Ada --------- sm_86
 #   RTX 4070 -------------- sm_89
 #
-CUDA_ARCH = sm_75
-
+# CUDA_ARCH = sm_75
+CUDA_ARCH = sm_86 # rtx3070
 
 #
 # source code files
