@@ -9,6 +9,8 @@
 #ifndef DETI_COINS_CPU_SPECIAL_SEARCH
 #define DETI_COINS_CPU_SPECIAL_SEARCH
 
+// histogram
+extern int histogram[MAX_POWER + 1]; // Declaration
 
 static void deti_coins_cpu_special_search(void)
 {
@@ -61,6 +63,15 @@ static void deti_coins_cpu_special_search(void)
       // count the number of trailing zeros of the MD5 hash
       //
       n = deti_coin_power(hash);
+      
+      //
+      // update histogram
+      //
+      if (n <= MAX_POWER) 
+      {
+        histogram[n]++; 
+      }
+
       //
       // if the number of trailing zeros is >= 32 we have a DETI coin
       //

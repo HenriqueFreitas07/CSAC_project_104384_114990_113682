@@ -17,6 +17,11 @@
 #if defined(USE_CUDA) && USE_CUDA==0
 	#include <mpi.h>
 #endif
+
+// histogram
+#define MAX_POWER 128
+int histogram[MAX_POWER + 1] = {0}; // Definition
+
 // number of threads
 //
 
@@ -335,6 +340,15 @@ int main(int argc,char **argv)
         printf("searching for %u seconds using deti_coins_cpu_special_search()\n",seconds);
         fflush(stdout);
         deti_coins_cpu_special_search();
+
+        // Print the histogram
+        printf("Histogram of DETI coin powers:\n");
+        for (int i = 0; i <= MAX_POWER; i++) {
+            if (histogram[i] > 0) {
+                printf("Power %d: %d occurrences\n", i, histogram[i]);
+            }
+        }
+
         break;
 #endif
     }
