@@ -1,0 +1,119 @@
+60 seconds
+| **Algorithm**                        | **RTX 4060**                   | **GTX 1660 Ti** | **Laptop** |
+|--------------------------------------|--------------------------------|---------------|--------------|
+| DETI_COINS_CPU_SEARCH		       | 
+| DETI_COINS_CPU_AVX_SEARCH            | x coins | x attempts           |               |              |
+| 	DETI_COINS_CPU_AVX2_SEARCH           | x coins | x attempts           |               |              |
+| DETI_COINS_CPU_SPECIAL_SEARCH        | x coins | x attempts           |               |              |
+| DETI_COINS_CPU_OpenMP_SEARCH         | x coins | x attempts           |               |              |
+| DETI_COINS_CPU_MPI_OpenMP_SEARCH     | x coins | x attempts           |               |              |
+| DETI_COINS_CUDA_SEARCH               | 61 coins | 3288334336 attempts |               |              |
+| DETI_COINS_OpenCL_SEARCH             | x coins | x attempts           |               |              |
+
+
+
+120 seconds
+| **Algorithm**                        | **RTX 4060**                | **GTX 1660 Ti**      	        | **Laptop**   			    | **RTX 3070**
+|--------------------------------------|-----------------------------|----------------------------------|-----------------------------------|----------------------
+| DETI_COINS_CPU_SEARCH		       | 			     | 0 coins   | 1429157578 attempts  | 0 coins | 841453548 attempts	    | 0 coins | 1371730021 attempts 
+| DETI_COINS_CPU_AVX_SEARCH            | x coins | x attempts        | 2 coins   | 4085920632 attempts  | 2 coins | 2165617912 attempts     | 2 coins | 3410690388 attempts 
+| DETI_COINS_CPU_AVX2_SEARCH           | x coins | x attempts        | 2 coins 	 | 7764981448 attempts  | 2 coins | 4262380872 attempts     | 2 coins | 6797266080 attempts
+| DETI_COINS_CPU_SPECIAL_SEARCH        | x coins | x attempts        | 1 coins   | 1615264917 attempts  | 1 coins | 914049090 attempts      | 1 coins | 1584884714 attempts
+| DETI_COINS_CPU_OpenMP_SEARCH         | x coins | x attempts        | 2 coins 	 | 15047169908 attempts | 1 coins | 6555845880 attempts     | 2 coins | 13762832384 attempts
+| DETI_COINS_CPU_MPI_OpenMP_SEARCH     | x coins | x attempts        | 2 coins   | 15001020376 attempts | 1 coins | 6509774132 attempts     | 2 coins | 13703463816 attempts
+| DETI_COINS_CUDA_SEARCH               | x coins | x attempts        | 312 coins | 1405259612160 attempts               |              	    | 567 coins | 2402094678016 attempts
+| DETI_COINS_OpenCL_SEARCH             | x coins | x attempts        |               |              |
+
+180 seconds
+| **Algorithm**                        | **RTX 4060**                           | **GTX 1660 Ti**      	           | **Laptop**   		     | **RTX 3070**
+|--------------------------------------|----------------------------------------|----------------------------------|---------------------------------|
+| DETI_COINS_CPU_SEARCH		       | 			                | 0 coins   | 2159757428 attempts  | 0 coins | 1283531949 attempts | 0 coins | 1934223009 attempts
+| DETI_COINS_CPU_AVX_SEARCH            | 3 coins   | 7746238180 attempts        | 2 coins   | 5801526924 attempts  | 2 coins | 3419604700 attempts  | 2 coins | 4733454912 attempts
+| DETI_COINS_CPU_AVX2_SEARCH           | 4 coins   | 13831086480 attempts       | 3 coins   | 11526577472 attempts | 2 coins | 6471889632 attempts  | 3 coins | 10399312342 attempts
+| DETI_COINS_CPU_SPECIAL_SEARCH        | 2 coins   | 3484097995 attempts        | 1 coins   | 2422952904 attempts  | 1 coins | 1348641820 attempts | 1 coins | 2369962707 attempts
+| DETI_COINS_CPU_OpenMP_SEARCH         | 5 coins   | 28220148680 attempts       | 4 coins   | 22665510148 attempts | 2 coins | 9877309572 attempts | 4 coins | 20613783324 attempts
+| DETI_COINS_CPU_MPI_OpenMP_SEARCH     | 5 coins   | 27537189052 attempts       | 4 coins   | 22719747788 attempts | 2 coins | 9803402280 attempts | 4 coins | 20619648300 attempts
+| DETI_COINS_CUDA_SEARCH               | 446 coins | 1954210119680 attempts     | 507 coins | 2108963160064 attempts |              		 | 847 coins | 3700986740736 attempts
+| DETI_COINS_OpenCL_SEARCH             | x coins | x attempts        		|               |              |
+
+
+240 seconds
+| **Algorithm**                        | **RTX 4060**                | **GTX 1660 Ti**      	        | **Laptop**   		       | **RTX 3070**
+|--------------------------------------|-----------------------------|----------------------------------|------------------------------|
+| DETI_COINS_CPU_SEARCH		       | 			     | 0 coins   | 2872146390 attempts  | 0 coins | 1712365134 attempts	     | 0 coins | 2566234331 attempts
+| DETI_COINS_CPU_AVX_SEARCH            | x coins | x attempts        | 3 coins   | 7683603760 attempts  | 2 coins | 4557136984 attempts     | 3 coins 6922313841 attempts
+| DETI_COINS_CPU_AVX2_SEARCH           | x coins | x attempts        | 4 coins 	 | 15366032280 attempts | 3 coins | 8637088888 attempts     | 4 coins 13556982359 attempts
+| DETI_COINS_CPU_SPECIAL_SEARCH        | x coins | x attempts        | 2 coins   | 3360401424 attempts  | 1 coins | 1830084193 attempts        | 2 coins | 2883256012 attempts
+| DETI_COINS_CPU_OpenMP_SEARCH         | x coins | x attempts        | 5 coins 	 | 30422580456 attempts | 2 coins | 13170213624 attempts         | 5 coins | 25522963018 attempts
+| DETI_COINS_CPU_MPI_OpenMP_SEARCH     | x coins | x attempts        | 5 coins   | 30103950924 attempts | 2 coins | 13094012540 attempts             | 5 coins | 25834093173 attempts
+| DETI_COINS_CUDA_SEARCH               | x coins | x attempts        | 647 coins |  2803808337920 attempts|              	     | 1144 coins | 5003569790976 attempts
+| DETI_COINS_OpenCL_SEARCH             | x coins | x attempts        |               |              |
+
+300 seconds
+| **Algorithm**                        | **RTX 4060**                          | **GTX 1660 Ti**                    | **Laptop**  		   | **RTX 3070**
+|--------------------------------------|---------------------------------------|------------------------------------|------------------------------|
+| DETI_COINS_CPU_SEARCH		       | 				       | 0 coins   | 3596573206 attempts    | 0 coins | 2136368392 attempts | 0 coins | 3134019265 attempts
+| DETI_COINS_CPU_AVX_SEARCH            | 5 coins | 13064434192 attempts        | 4 coins   | 9755767968 attempts    | 2 coins | 5705680984 attempts | 3 coins | 8234661023 attempts
+| DETI_COINS_CPU_AVX2_SEARCH           | 6 coins | 23062280152 attempts        | 5 coins   | 20018999552 attempts   | 3 coins | 10772710936 attempts| 4 coins | 16345223092 attempts
+| DETI_COINS_CPU_SPECIAL_SEARCH        | 2 coins | 5857090922  attempts        | 2 coins   | 4026000615 attempts    | 1 coins | 2291219600 attempts | 2 coins | 3523001927 attempts
+| DETI_COINS_CPU_OpenMP_SEARCH         | 9 coins | 45610963496 attempts        | 8 coins   | 37996904848 attempts   | 3 coins | 16464750868 attempts| 7 coins | 30234001892 attempts
+| DETI_COINS_CPU_MPI_OpenMP_SEARCH     | 9 coins | 47266364632 attempts        | 8 coins   | 37800909904 attempts   | 3 coins | 16384997060 attempts| 6 coins | 29032849102 attempts
+| DETI_COINS_CUDA_SEARCH               | 700 coins | 3175994097664 attempts    | 797 coins | 3476977352704 attempts |              	| 1382 coins | 6072681103360 attempts
+| DETI_COINS_OpenCL_SEARCH             | x coins | x attempts                  |               			    |              |
+
+
+
+./deti_coins_intel_cuda
+./deti_coins_intel
+
+LAPTOP IS INTEGRATED GRAPHS DOESNT HAVE CUDA 
+
+Posso tambem fazer varios testes para o mesmo e correr médias
+
+LIST CPUS: 
+Processor    Intel(R) Core(TM) i5-4210U CPU @ 1.70GHz, 2401 Mhz, 2 Core(s), 4 Logical Processor(s) -> LAPTOP -> consuming 32 watts
+
+Dunno if it can affect but for my laptop to run the MPI tests I needed to download a new console since MPI wasn't working, I used OpenMPI, also I was using windows
+No more programming in windows
+
+AMD RYZEN 5 5600
+RTX3070
+
+Processador: Intel® Core™ i9-13980HX 24-Core, com Turbo até 5.6 GHz, 36 MB Cache.
+RTX 4060
+
+
+COMPARAR CONSUMOS
+
+gabriel@gabriel-System-Product-Name:~/Desktop/CSAC_project_104384_114990_113682$ nvidia-smi
+Mon Dec 30 15:41:03 2024       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 560.35.05              Driver Version: 560.35.05      CUDA Version: 12.6     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GeForce RTX 3070        Off |   00000000:08:00.0  On |                  N/A |
+| 60%   64C    P0            218W /  220W |     664MiB /   8192MiB |    100%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI        PID   Type   Process name                              GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|    0   N/A  N/A      2136      G   /usr/lib/xorg/Xorg                            129MiB |
+|    0   N/A  N/A      2404      G   /usr/bin/gnome-shell                           90MiB |
+|    0   N/A  N/A      3164      G   ...irefox/4793/usr/lib/firefox/firefox        191MiB |
+|    0   N/A  N/A      4332      G   ...erProcess --variations-seed-version         38MiB |
+|    0   N/A  N/A      6770      C   ./deti_coins_intel_cuda                       172MiB |
++-----------------------------------------------------------------------------------------+
+
+
+RTX 3070 was capped at 60% usage meaning 220W
+
+For the same PC, compare all stats
+For different PC's compare all stats
+
