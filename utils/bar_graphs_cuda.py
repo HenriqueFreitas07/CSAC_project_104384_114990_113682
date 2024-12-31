@@ -30,8 +30,9 @@ fig1, ax1 = plt.subplots(figsize=(10, 6))
 bar_width = 20
 x_positions = np.array(time_intervals) * 1.5
 
+colors = ["steelblue", "darkorange", "mediumseagreen"]
 for i, gpu in enumerate(gpu_names):
-    ax1.bar(x_positions + i * bar_width, attempts[i], width=bar_width, label=gpu)
+    ax1.bar(x_positions + i * bar_width, attempts[i], width=bar_width, label=gpu, color=colors[i])
 
 ax1.set_title("Number of Attempts For Each GPU", fontsize=14)
 ax1.set_xlabel("Time (s)", fontsize=12)
@@ -47,8 +48,9 @@ plt.savefig("cuda_attempts.png", dpi=300, bbox_inches="tight")
 # Plot CUDA Coins
 fig2, ax2 = plt.subplots(figsize=(10, 6))
 
+colors = ["steelblue", "darkorange", "mediumseagreen"]
 for i, gpu in enumerate(gpu_names):
-    ax2.bar(x_positions + i * bar_width, coins[i], width=bar_width, label=gpu)
+    ax2.bar(x_positions + i * bar_width, coins[i], width=bar_width, label=gpu, color=colors[i])
 
 ax2.set_title("Number of Coins Mined By Each GPU", fontsize=14)
 ax2.set_xlabel("Time (s)", fontsize=12)
