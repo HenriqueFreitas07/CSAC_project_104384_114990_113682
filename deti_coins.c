@@ -6,6 +6,7 @@
 // DETI coins main program (possible solution)
 //
 
+#include <omp.h>
 #include <time.h>
 #include <stdio.h>
 #include <signal.h>
@@ -13,6 +14,24 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <sys/resource.h>
+#if defined(USE_CUDA) && USE_CUDA==0
+	#include <mpi.h>
+#endif
+
+// histogram
+#define MAX_POWER 128
+int histogram[MAX_POWER + 1] = {0}; // Definition
+
+// number of threads
+//
+
+#ifndef n_threads
+# define n_threads   4
+#endif
+#if n_threads < 2 || n_threads > 16
+# error "too few or too many threads"
+#endif
+#define n_threads_max  16
 
 
 #if defined(__GNUC__) && __BYTE__ORDER__ != __LITTLE_ENDIAN__
@@ -65,7 +84,7 @@ typedef unsigned long u64_t;
 #include "md5_test_data.h"
 #include "md5_cpu.h"
 #include "md5_cpu_avx.h"
-//#include "md5_cpu_avx2.h"
+#include "md5_cpu_avx2.h"
 #include "md5_cpu_neon.h"
 #if USE_CUDA > 0
 # include "cuda_driver_api_utilities.h"
@@ -128,21 +147,26 @@ static void alarm_signal_handler(int dummy)
 }
 
 #include "deti_coins_cpu_search.h"
-//#include "deti_coins_cpu_special_search.h"
+#include "deti_coins_cpu_special_search.h"
+#if USE_CUDA==0
+	#include "deti_coins_cpu_OpenMP_search.h"
+	#include "deti_coins_cpu_MPI_OpenMP_search.h"
+#endif
 
-//#include "search_utilities.h"
-//#ifdef MD5_CPU_AVX
-//# include "deti_coins_cpu_avx_search.h"
-//#endif
-//#ifdef MD5_CPU_AVX2
-//# include "deti_coins_cpu_avx2_search.h"
-//#endif
-//#ifdef MD5_CPU_NEON
-//# include "deti_coins_cpu_neon_search.h"
-//#endif
-//#if USE_CUDA > 0
-//# include "deti_coins_cuda_search.h"
-//#endif
+#include "search_utilities.h"
+#ifdef MD5_CPU_AVX
+# include "deti_coins_cpu_avx_search.h"
+#endif
+
+#ifdef MD5_CPU_AVX2
+# include "deti_coins_cpu_avx2_search.h"
+#endif
+#ifdef MD5_CPU_NEON
+# include "deti_coins_cpu_neon_search.h"
+#endif
+#if USE_CUDA > 0
+# include "deti_coins_cuda_search.h"
+#endif
 
 
 //
@@ -151,8 +175,10 @@ static void alarm_signal_handler(int dummy)
 
 int main(int argc,char **argv)
 {
-  u32_t seconds,n_random_words;
-
+   #if USE_CUDA==0
+	   int n_processes,rank;
+   #endif 
+   u32_t seconds,n_random_words;
   //
   // correctness tests (-t command line option)
   //
@@ -204,6 +230,90 @@ int main(int argc,char **argv)
         deti_coins_cpu_avx_search(n_random_words);
         break;
 #endif
+#ifdef DETI_COINS_CPU_OpenMP_SEARCH
+      case '7':
+        printf("searching for %u seconds using deti_coins_cpu_OpenMP_search()\n",seconds);
+        fflush(stdout);
+        
+        unsigned long total_coins = 0;
+        unsigned long total_attempts = 0;
+
+        // Parallel region with reduction to sum the totals across threads
+        # pragma omp parallel num_threads(n_threads) reduction(+:total_coins, total_attempts)
+          { // automatic variable are local to the thread
+            int thread_number = omp_get_thread_num(); 
+            unsigned long n_coins = 0;
+            unsigned long n_attempts = 0;
+
+            deti_coins_cpu_OpenMP_search(thread_number, &n_coins, &n_attempts);
+            
+            total_coins += n_coins;
+            total_attempts += n_attempts;
+          }
+        
+        // Final aggregated results
+        double total_expected_coins = (double)total_attempts / (1ul << 32);
+        printf("Total: %lu DETI coin%s found in %lu attempt%s (expected %.2f coins)\n",
+              total_coins, (total_coins == 1ul) ? "" : "s", total_attempts,
+              (total_attempts == 1ul) ? "" : "s", total_expected_coins);
+
+        STORE_DETI_COINS();  
+        break;
+#endif
+#ifdef DETI_COINS_CPU_MPI_OpenMP_SEARCH
+      case '8':
+
+        //
+        // initialize the MPI environment, and get the number of processes and the MPI number of our process (the rank)
+        //
+        MPI_Init(&argc,&argv);
+        MPI_Comm_size(MPI_COMM_WORLD,&n_processes);
+        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+        
+        printf("Process %d/%d: searching for DETI coins\n", rank, n_processes);
+        fflush(stdout);
+
+        // Local variables for this MPI process
+        unsigned long local_coins = 0;
+        unsigned long local_attempts = 0;
+
+        // Parallel region with reduction to sum the totals across threads
+        #pragma omp parallel num_threads(n_threads) reduction(+:local_coins, local_attempts)
+        {
+            int thread_number = omp_get_thread_num();
+            unsigned long n_coins = 0;
+            unsigned long n_attempts = 0;
+
+            deti_coins_cpu_MPI_OpenMP_search(rank, thread_number, &n_coins, &n_attempts); // TODO: create deti_coins_cpu_MPI_OpenMP_search
+
+            local_coins += n_coins;
+            local_attempts += n_attempts;
+        }
+
+        // Each process stores its own coins locally
+        STORE_DETI_COINS(); // Store the coins found by this process
+        
+        // Global variables for total aggregation
+        unsigned long global_coins = 0;
+        unsigned long global_attempts = 0;
+
+        // Use MPI_Reduce to aggregate results from all processes to rank 0
+        MPI_Reduce(&local_coins, &global_coins, 1, MPI_UNSIGNED_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(&local_attempts, &global_attempts, 1, MPI_UNSIGNED_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
+
+        // Rank 0 prints the global aggregated results
+        if (rank == 0) {
+            double total_expected_coins = (double)global_attempts / (1ul << 32);
+            printf("Total: %lu DETI coin%s found in %lu attempt%s (expected %.2f coins)\n",
+                  global_coins, (global_coins == 1ul) ? "" : "s", global_attempts,
+                  (global_attempts == 1ul) ? "" : "s", total_expected_coins);
+
+            // STORE_DETI_COINS(); // Store global results
+        }
+
+        MPI_Finalize();
+        break;
+#endif
 #ifdef DETI_COINS_CPU_AVX2_SEARCH
       case '2':
         printf("searching for %u seconds using deti_coins_cpu_avx2_search()\n",seconds);
@@ -230,6 +340,15 @@ int main(int argc,char **argv)
         printf("searching for %u seconds using deti_coins_cpu_special_search()\n",seconds);
         fflush(stdout);
         deti_coins_cpu_special_search();
+
+        // Print the histogram
+        printf("Histogram of DETI coin powers:\n");
+        for (int i = 0; i <= MAX_POWER; i++) {
+            if (histogram[i] > 0) {
+                printf("Power %d: %d occurrences\n", i, histogram[i]);
+            }
+        }
+
         break;
 #endif
     }
@@ -239,6 +358,12 @@ int main(int argc,char **argv)
   fprintf(stderr,"       %s -s0 [seconds] [ignored]          # search for DETI coins using md5_cpu()\n",argv[0]);
 #ifdef DETI_COINS_CPU_AVX_SEARCH
   fprintf(stderr,"       %s -s1 [seconds] [n_random_words]   # search for DETI coins using md5_cpu_avx()\n",argv[0]);
+#endif
+#ifdef DETI_COINS_CPU_OpenMP_SEARCH
+  fprintf(stderr,"       %s -s7 [seconds] [n_random_words]   # search for DETI coins using openMP\n",argv[0]);
+#endif
+#ifdef DETI_COINS_CPU_MPI_OpenMP_SEARCH
+  fprintf(stderr,"       %s -s8 [seconds] [n_random_words]   # search for DETI coins using MPI openMP\n",argv[0]);
 #endif
 #ifdef DETI_COINS_CPU_AVX2_SEARCH
   fprintf(stderr,"       %s -s2 [seconds] [n_random_words]   # search for DETI coins using md5_cpu_avx2()\n",argv[0]);
@@ -256,3 +381,4 @@ int main(int argc,char **argv)
   fprintf(stderr,"                                           #   n_random_words is the number of 4-byte words to use\n");
   return 1;
 }
+//

@@ -17,8 +17,25 @@
 typedef unsigned int u32_t;
 
 #include "md5.h"
-
-//
+#define next_value_to_try(v)                              \
+	do                                                      \
+{                                                       \
+	v++;                                                \
+	if ( (v & 0xFFu) == 0x7Fu )                           \
+	{                                                   \
+		v += 0xA1u;               \
+		if (((v >> 8) & 0xFFu ) == 0x7Fu)                 \
+		{                                               \
+			v += 0xA1u << 8;                             \
+			if (((v >> 16) & 0xFFu ) == 0x7Fu)            \
+			{                                           \
+				v += 0xA1u << 16;                        \
+				if (((v >> 24) & 0xFFu ) == 0x7Fu)        \
+				v += 0xA1u << 24;                    \
+			}                                           \
+		}                                               \
+	}                                                   \
+} while(0)
 // the nvcc compiler stores x[] and state[] in registers (constant indices!)
 //
 // global thread number: n = threadIdx.x + blockDim.x * blockIdx.x
@@ -26,33 +43,75 @@ typedef unsigned int u32_t;
 // warp thread number: n & 31
 //
 
-extern "C" __global__ __launch_bounds__(128,1) void cuda_md5_kernel(u32_t *interleaved32_data,u32_t *interleaved32_hash)
+extern "C" __global__ __launch_bounds__(128,1) void cuda_md5_kernel(u32_t v1,u32_t v2,u32_t *data_storage_device)
 {
-  u32_t n,a,b,c,d,state[4],x[16];
+	u32_t number_coins=64u;	
+	u32_t n,a,b,c,d,state[4],x[16],coin[13u],hash[4u];
+	n = (u32_t)threadIdx.x + (u32_t)blockDim.x * (u32_t)blockIdx.x;
+	//printf("Thread ID:%\n",n);
+	u32_t previous;
+	//
+	// mandatory for a DETI coin
+	//
 
-  //
-  // get the global thread number
-  //
-  n = (u32_t)threadIdx.x + (u32_t)blockDim.x * (u32_t)blockIdx.x;
-  //
-  // adjust data and hash pointers
-  //
-  interleaved32_data = &interleaved32_data[(n >> 5u) * (32u * 13u) + (n & 31u)];
-  interleaved32_hash = &interleaved32_hash[(n >> 5u) * (32u *  4u) + (n & 31u)];
-  //
-  // compute MD5 hash
-  //
+	coin[ 0u] = 0x49544544; // ITED
+	coin[ 1u] = 0x696f6320; // ioc_ 
+	coin[ 2u] = 0x7343206e; // sC_n
+	coin[ 3u] = 0x30324341; // 02CA
+	coin[ 4u] = 0x41203432; // A_42
+	coin[ 5u] = 0x34314441; // 41DA
+	coin[ 6u] = v1; 
+	coin[ 7u] = v2; 
+	// insert some complexity with the thread ID 
+	coin[ 8u] = 0x20202020; 
+	coin[ 8u] += (n%64u)<< 0; n/=64u;
+	coin[ 8u] += (n%64u)<< 8; n/=64u;
+	coin[ 8u] += (n%64u)<< 16; n/=64u;
+	coin[ 8u] += (n%64u)<< 24; n/=64u;
+	coin[ 9u] = 0x20202020; 
+	coin[ 10u] = 0x20202020; 
+	coin[ 11u] = 0x20202020; 
+	coin[ 12u] = 0x0A202020; 
+
+	for (n=0u;n< number_coins;n++){
+
 # define C(c)         (c)
 # define ROTATE(x,n)  (((x) << (n)) | ((x) >> (32 - (n))))
-# define DATA(idx)    interleaved32_data[32u * (idx)]
-# define HASH(idx)    interleaved32_hash[32u * (idx)]
+# define DATA(idx)    coin[idx] 
+# define HASH(idx)    hash[idx]
 # define STATE(idx)   state[idx]
 # define X(idx)       x[idx]
-  CUSTOM_MD5_CODE();
+		CUSTOM_MD5_CODE();
 # undef C
 # undef ROTATE
 # undef DATA
 # undef HASH
 # undef STATE
 # undef X
+		//gets the current idx if it has encoutered a new coin then increments it with an atomic add
+		u32_t idx = data_storage_device[0];
+
+		//printf("Coin: %52.52s",(char *)coin);
+		if (hash[3] == 0 && idx < 1024 - 13) {
+			idx = atomicAdd(&data_storage_device[0], 13); // Atomic index increment
+			printf("Coin: %52.52s",(char *)coin);
+			for (int j = 0; j < 13; j++) {
+				// just to print the founded coin
+				data_storage_device[idx + j] = coin[j]; // Copy coin to storage
+			}
+		}
+
+		//incremts always on the 9th index and if one of the previous check
+		next_value_to_try(coin[9u]);
+		for(u32_t offset=10u;offset<13u;offset++){
+			// change the values 
+			previous=coin[offset-1u];
+			if (previous == 0x7E7E7E7Eu)
+			{
+				next_value_to_try(coin[offset]);
+			}
+		}
+
+	}
+
 }
