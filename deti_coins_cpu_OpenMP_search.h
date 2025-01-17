@@ -10,7 +10,7 @@
 #define DETI_COINS_CPU_OpenMP_SEARCH
 
 
-static void deti_coins_cpu_OpenMP_search(int thread_number, unsigned long *out_n_coins, unsigned long *out_n_attempts) // TODO: delete the first argument
+static void deti_coins_cpu_OpenMP_search(int thread_number, unsigned long *out_n_coins, unsigned long *out_n_attempts) 
 {
 # define N_LANES 4u
   u32_t coins[13u*N_LANES],hash[4u * N_LANES],coin[13];
