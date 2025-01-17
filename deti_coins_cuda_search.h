@@ -24,8 +24,6 @@ u32_t next_value_to_try_ascii(u32_t v){
   }                                                   
   return v; 
 }
-#define AVG_10 40;
-extern int histogram[AVG_10]={0};
 
 void deti_coins_cuda_search(u32_t random_words) {
   u32_t block_size = 128;
@@ -88,14 +86,13 @@ void deti_coins_cuda_search(u32_t random_words) {
       custom_word2=next_value_to_try_ascii(custom_word2);
     }
     long elapsed_time_ns = calculate_elapsed_time(start_time, end_time);
-    long hist_elapsed = elapsed_time_ns * 10;
-    //histograma
-    histogram[hist_elapsed]+=1;
+    sum_times_ns+=elapsed_time_ns;
+    kernel_calls++;
+
   }
+  float avg = sum_times_ns/kernel_calls;
+  printf("Average kernel time execution %f \n",avg);
   // Calculate average kernel execution time in microseconds
-  for (int i=0; i< AVG_10; i++) {
-    printf("For all the kernels with %l \n",histogram[i]);
-  }
   STORE_DETI_COINS();	
   printf("deti_coins_cuda_search: %lu DETI coin%s found in %lu attempt%s (expected %.2f coins)\n",
          n_coins, 
